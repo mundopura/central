@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070b11; --bg2: #0b1119; --card: #0e151f; --card2: #121b27; --line: #1c2735; --line2: #26344599;
+    --ink: #e8eef6; --muted: #8b9bb0; --dim: #5d6d82;
+    --brand: #22d3a6; --brand2: #3b82f6; --grad: linear-gradient(135deg, #22d3a6 0%, #3b82f6 100%);
+    --good: #22c55e; --good-soft: #22c55e1f; --bad: #f43f5e; --bad-soft: #f43f5e1f; --warn: #f59e0b; --warn-soft: #f59e0b1f;
+    --info: #60a5fa; --info-soft: #60a5fa1f; --glow: 0 0 0 1px #ffffff08, 0 10px 30px #00000059;
+    --chip: #ffffff0a;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef2f7; --bg2: #e6ebf2; --card: #ffffff; --card2: #f6f8fb; --line: #dfe5ee; --line2: #dfe5ee;
+    --ink: #0f1722; --muted: #5b6b80; --dim: #8a98aa;
+    --good-soft: #22c55e1a; --bad-soft: #f43f5e17; --warn-soft: #f59e0b1c; --info-soft: #3b82f617;
+    --glow: 0 1px 2px #0f17220d, 0 6px 20px #0f17220a; --chip: #0f17220a;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 Inter, "Segoe UI", system-ui, sans-serif; }
+  :root:not([data-theme="light"]) body { background: radial-gradient(1200px 600px at 85% -10%, #3b82f614, transparent 60%), radial-gradient(900px 500px at -10% 10%, #22d3a612, transparent 60%), var(--bg); background-attachment: fixed; }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- estrutura ---------- */
+  .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+  .side { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--bg2); border-right: 1px solid var(--line); padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 16px; }
+  .logo { width: 38px; height: 38px; border-radius: 11px; background: var(--grad); color: #04110d; display: grid; place-items: center; font-weight: 800; flex: none; box-shadow: 0 6px 20px #22d3a640; }
+  .brand b { display: block; font-size: 15px; }
+  .brand small { color: var(--muted); font-size: 11px; letter-spacing: .4px; text-transform: uppercase; }
+  .grp { font-size: 10.5px; letter-spacing: .9px; text-transform: uppercase; color: var(--dim); padding: 14px 10px 6px; font-weight: 700; }
+  .nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 9px; color: var(--muted); font-weight: 600; font-size: 13.5px; }
+  .nav a:hover { background: var(--chip); color: var(--ink); }
+  .nav a.on { background: var(--card2); color: var(--ink); box-shadow: inset 2px 0 0 var(--brand); }
+  .nav svg { width: 17px; height: 17px; flex: none; opacity: .9; }
+  .nav .cdot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin: 0 4px; }
+  .nav .val { margin-left: auto; font-size: 11.5px; color: var(--dim); font-weight: 600; }
+  .nav .bdg { margin-left: auto; background: var(--bad); color: #fff; font-size: 10.5px; border-radius: 9px; padding: 0 6px; line-height: 17px; }
+  .side .foot { margin-top: auto; padding: 14px 8px 0; display: grid; gap: 8px; font-size: 12px; color: var(--muted); }
+  .btn-ghost { border: 1px solid var(--line); background: transparent; border-radius: 9px; padding: 6px 10px; cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 600; }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--dim); }
+  .btn { border: 0; background: var(--grad); color: #04110d; border-radius: 9px; padding: 8px 14px; cursor: pointer; font-weight: 700; }
+
+  .main { min-width: 0; }
+  .topbar { position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 28px; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .topbar h1 { margin: 0; font-size: 20px; letter-spacing: -.3px; }
+  .topbar .sub { color: var(--muted); font-size: 12.5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 3px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; padding: 6px 11px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); font-size: 12.5px; }
+  .seg button.on { background: var(--card2); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line2); }
+  .view { padding: 22px 28px 50px; }
+  @media (max-width: 960px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .side { position: static; height: auto; flex-direction: row; overflow-x: auto; padding: 10px 12px; gap: 2px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .side .grp, .side .foot, .nav .val, .brand div { display: none; }
+    .brand { padding: 0 6px 0 0; }
+    .nav { display: flex; gap: 2px; }
+    .nav a { white-space: nowrap; }
+    .topbar, .view { padding-left: 16px; padding-right: 16px; }
+  }
+
+  /* ---------- blocos ---------- */
+  .grid { display: grid; gap: 16px; margin-bottom: 16px; }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g21 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .g12 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .g6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  @media (max-width: 1250px) { .g6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 960px) { .g3, .g2, .g21, .g12 { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 560px) { .g6, .g4 { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: var(--glow); min-width: 0; position: relative; }
+  .card h3 { margin: 0 0 14px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; letter-spacing: .1px; }
+  .card h3 small { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .card h3 .r { margin-left: auto; font-weight: 500; }
+  .eyebrow { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .big { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+  .mid { font-size: 24px; font-weight: 750; letter-spacing: -.5px; }
+  .muted { color: var(--muted); }
+  .dim { color: var(--dim); }
+  .tiny { font-size: 12px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .delta { font-weight: 700; border-radius: 6px; padding: 1px 6px; font-size: 11.5px; white-space: nowrap; }
+  .up { color: var(--good); background: var(--good-soft); }
+  .down { color: var(--bad); background: var(--bad-soft); }
+  .flat { color: var(--muted); background: var(--chip); }
+  .kpi .lbl { font-size: 12px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .kpi .v { font-size: 23px; font-weight: 750; margin: 6px 0 4px; letter-spacing: -.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi .c { font-size: 11.5px; color: var(--muted); }
+  .kpi .spark { position: absolute; right: 14px; top: 14px; width: 74px; height: 26px; opacity: .9; }
+
+  .hero { background: linear-gradient(160deg, color-mix(in srgb, var(--hero, var(--brand)) 18%, var(--card)) 0%, var(--card) 55%); }
+  .hero .bigspark { width: 100%; height: 70px; display: block; margin-top: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+  .stats div { background: var(--chip); border-radius: 10px; padding: 8px 10px; }
+  .stats b { display: block; font-size: 15px; }
+  .stats small { color: var(--muted); font-size: 11px; }
+
+  .chart { position: relative; height: 280px; }
+  .chart.sm { height: 210px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--dim); font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th.s { cursor: pointer; user-select: none; }
+  th.s:hover { color: var(--ink); }
+  td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr.link { cursor: pointer; }
+  tbody tr.link:hover td { background: var(--chip); }
+  .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  .tt { max-width: 360px; }
+  .tt .sku { color: var(--dim); font-size: 11px; }
+  .pill { display: inline-block; border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .p-ok { background: var(--good-soft); color: var(--good); }
+  .p-bad { background: var(--bad-soft); color: var(--bad); }
+  .p-warn { background: var(--warn-soft); color: var(--warn); }
+  .p-info { background: var(--info-soft); color: var(--info); }
+  .p-mut { background: var(--chip); color: var(--muted); }
+  .cn { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; font-weight: 600; }
+  .cn i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .stack { display: flex; height: 7px; border-radius: 4px; overflow: hidden; background: var(--chip); min-width: 80px; }
+  .stack i { display: block; height: 100%; }
+  .bar { height: 7px; border-radius: 4px; background: var(--chip); overflow: hidden; min-width: 60px; }
+  .bar i { display: block; height: 100%; border-radius: 4px; background: var(--grad); }
+  .hbar { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 5px 0; font-size: 13px; }
+  .hbar .t { height: 9px; background: var(--chip); border-radius: 5px; overflow: hidden; }
+  .hbar .t i { display: block; height: 100%; background: var(--grad); border-radius: 5px; }
+
+  /* metas */
+  .ring { position: relative; width: 112px; height: 112px; flex: none; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .lbl { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .ring .lbl b { font-size: 21px; display: block; line-height: 1; }
+  .ring .lbl small { font-size: 10.5px; color: var(--muted); }
+  .ring.sm { width: 64px; height: 64px; }
+  .ring.sm .lbl b { font-size: 13px; }
+  .goal { display: flex; gap: 18px; align-items: center; }
+  .goal-list { display: grid; gap: 12px; }
+  .goal-item { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: var(--chip); }
+  .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-top: 8px; }
+  .cal div { aspect-ratio: 1; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; background: var(--chip); color: var(--dim); }
+  .cal .ok { background: var(--good); color: #03140a; }
+  .cal .meio { background: color-mix(in srgb, var(--good) 40%, transparent); color: var(--ink); }
+  .cal .hoje { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .cal .fut { opacity: .35; }
+  .cal .h { background: none; aspect-ratio: auto; color: var(--dim); font-size: 10px; }
+  .meses { display: grid; gap: 8px; }
+  .mes { display: grid; grid-template-columns: 70px minmax(0, 1fr) 120px; gap: 10px; align-items: center; font-size: 12.5px; }
+  .mes .t { position: relative; height: 12px; background: var(--chip); border-radius: 6px; overflow: hidden; }
+  .mes .t i { position: absolute; inset: 0 auto 0 0; background: var(--grad); border-radius: 6px; }
+  .mes .t em { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, #ffffff22 0 4px, transparent 4px 8px); border-radius: 6px; }
+
+  /* insights */
+  .ins { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; padding: 14px; border-radius: 14px; background: var(--card2); border: 1px solid var(--line); margin-bottom: 10px; }
+  .ins .ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 17px; }
+  .ins .tit { display: block; font-size: 13.5px; font-weight: 700; }
+  .ins p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  .ins ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+  .ins li { margin: 3px 0; }
+  .ins .tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .lvl3 .ic { background: var(--bad-soft); } .lvl2 .ic { background: var(--warn-soft); } .lvl1 .ic { background: var(--info-soft); } .lvl0 .ic { background: var(--good-soft); }
+
+  .feed .it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .feed .it:last-child { border-bottom: 0; }
+  .feed .dot { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
+  .feed .t1 { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+  .feed .t2 { font-size: 11.5px; color: var(--muted); }
+  .feed .v { text-align: right; font-weight: 700; }
+  .novo { animation: pisca 3s ease-out; }
+  @keyframes pisca { from { background: var(--good-soft); } to { background: transparent; } }
+
+  .heat { display: grid; grid-template-columns: 32px repeat(24, minmax(0, 1fr)); gap: 2px; font-size: 10px; color: var(--dim); }
+  .heat div { height: 17px; border-radius: 3px; }
+  .heat .l { height: auto; display: flex; align-items: center; }
+  .heat .h { height: auto; text-align: center; }
+
+  .banner { border-radius: 18px; padding: 20px 22px; margin-bottom: 16px; border: 1px solid var(--line); background: linear-gradient(120deg, color-mix(in srgb, var(--cc) 30%, var(--card)) 0%, var(--card) 60%); display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+  .banner .ic { width: 52px; height: 52px; border-radius: 15px; background: var(--cc); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 16px; box-shadow: 0 8px 26px color-mix(in srgb, var(--cc) 45%, transparent); }
+  .banner h2 { margin: 0; font-size: 22px; letter-spacing: -.4px; }
+
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .tools input, .tools select, .field input { border: 1px solid var(--line); background: var(--card2); border-radius: 9px; padding: 8px 11px; min-width: 0; }
+  .tools input { flex: 1; min-width: 180px; }
+  .field { display: grid; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .field input { color: var(--ink); width: 100%; }
+  .ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .aviso { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 50%, transparent); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+  .vazio { color: var(--muted); padding: 14px 0; }
+  .live { display: inline-flex; align-items: center; gap: 6px; }
+  .dotlive { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 10px var(--good); animation: pulso 2s infinite; }
+  .dotlive.off { background: var(--bad); box-shadow: none; animation: none; }
+  .dotlive.warn { background: var(--warn); box-shadow: none; animation: none; }
+  @keyframes pulso { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .toast { position: fixed; right: 18px; bottom: 18px; width: 340px; max-width: calc(100% - 36px); background: var(--card2); border: 1px solid var(--line); border-left: 4px solid var(--good); border-radius: 14px; padding: 14px 16px; box-shadow: 0 16px 40px #0007; transform: translateY(170%); transition: transform .35s ease; z-index: 30; }
+  .toast.show { transform: none; }
+  .toast .v { font-size: 22px; font-weight: 800; color: var(--good); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo" id="logo">PV</div><div><b id="empresa">Central</b><small>Central de vendas</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">
+      <div id="status"></div>
+      <div class="row"><button class="btn-ghost" id="tema">Tema claro</button><a class="btn-ghost" href="sair" id="sair" hidden>Sair</a></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="titulo">Visão geral</h1>
+        <div class="sub" id="subtitulo"></div>
+      </div>
+      <div class="grow"></div>
+      <div class="seg" id="periodos">
+        <button data-p="hoje">Hoje</button><button data-p="7">7d</button><button data-p="30">30d</button>
+        <button data-p="mes">Mês</button><button data-p="90">90d</button><button data-p="12m">12m</button><button data-p="tudo">Tudo</button>
+      </div>
+    </header>
+    <div class="view">
+      <div id="avisos"></div>
+      <div id="tela"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>window.ESPERAR_DADOS = true; window.LINK_EMPRESA = "Pura Viva";</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+window.DADOS = /*DADOS*/null;
+(function () {
+  'use strict';
+  // ======================================================================
+  // configuração
+  // ======================================================================
+  const CANAIS = {
+    meli:   { nome: 'Mercado Livre', sigla: 'ML', cor: '#4f8cff', taxaRef: 0.16 },
+    tiktok: { nome: 'TikTok Shop',   sigla: 'TT', cor: '#c06cf0' },
+    shopee: { nome: 'Shopee',        sigla: 'SH', cor: '#ff6b4a' },
+    amazon: { nome: 'Amazon',        sigla: 'AM', cor: '#f5a524' },
+    site:   { nome: 'Loja própria',  sigla: 'LP', cor: '#ec4899' },
+    outros: { nome: 'Venda direta',  sigla: 'VD', cor: '#94a3b8' },
+    _:      { nome: 'Identificando', sigla: '…',  cor: '#475569' }
+  };
+  const ORDEM = ['meli', 'tiktok', 'shopee', 'amazon', 'site', 'outros', '_'];
+  const MARKETPLACES = ['meli', 'tiktok', 'shopee', 'amazon'];
+  const ST = {
+    aberto: ['Em aberto', 'p-mut'], aprovado: ['Aprovado', 'p-info'], preparando: ['Preparando', 'p-info'],
+    faturado: ['Faturado', 'p-info'], pronto: ['Pronto p/ envio', 'p-warn'], enviado: ['Enviado', 'p-info'],
+    entregue: ['Entregue', 'p-ok'], nao_entregue: ['Não entregue', 'p-bad'], cancelado: ['Cancelado', 'p-bad']
+  };
+  const A_ENVIAR = ['aprovado', 'preparando', 'faturado', 'pronto'];
+  const ESQUECIDO = 15;          // dias "a enviar" a partir dos quais é situação esquecida no ERP
+  const FRETE_GRATIS_ML = 79;    // valor mínimo usual para frete grátis no Mercado Livre
+  const TZ = 'America/Sao_Paulo';
+  const DSEM = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const DSEM_L = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  // ao vivo só quando aberto pelo servidor local; cópias (arquivo ou link) mostram a foto do momento
+  const vivo = window.AO_VIVO === true || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  // ======================================================================
+  // utilidades
+  // ======================================================================
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const brl = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const brl0 = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  const brlK = v => Math.abs(v) >= 1e6 ? 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' mi'
+    : Math.abs(v) >= 1e4 ? 'R$ ' + (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mil' : brl0(v);
+  const num = (v, c = 0) => (v || 0).toLocaleString('pt-BR', { maximumFractionDigits: c });
+  const pct = (v, c = 1) => v == null || !isFinite(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c }) + '%';
+  const ymd = d => d.toLocaleDateString('en-CA', { timeZone: TZ });
+  const soma = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const difDias = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / 864e5);
+  const dow = s => new Date(s + 'T12:00:00Z').getUTCDay();
+  const fmtDia = s => s.slice(8, 10) + '/' + s.slice(5, 7);
+  const fmtMes = k => MESES[+k.slice(5, 7) - 1] + '/' + k.slice(2, 4);
+  const nomeMes = k => ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+k.slice(5, 7) - 1];
+  const diasNoMes = k => +soma(soma(k + '-01', 32).slice(0, 8) + '01', -1).slice(8, 10);
+  const proxMes = k => soma(k + '-01', 32).slice(0, 7);
+  const atras = iso => { const m = Math.round((Date.now() - new Date(iso)) / 6e4); if (m < 1) return 'agora'; if (m < 60) return 'há ' + m + ' min'; const h = Math.round(m / 60); return h < 48 ? 'há ' + h + ' h' : 'há ' + Math.round(h / 24) + ' dias'; };
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const sum = (a, f) => a.reduce((s, x) => s + (f ? f(x) : x), 0);
+  const cnHtml = c => '<span class="cn"><i style="background:' + CANAIS[c].cor + '"></i>' + CANAIS[c].nome + '</span>';
+  const delta = (a, b, inverso) => {
+    if (b == null) return '';
+    if (!b) return a ? '<span class="delta up">novo</span>' : '<span class="delta flat">—</span>';
+    const x = (a - b) / Math.abs(b);
+    if (Math.abs(x) < 0.005) return '<span class="delta flat">= 0%</span>';
+    const bom = inverso ? x < 0 : x > 0;
+    return '<span class="delta ' + (bom ? 'up' : 'down') + '">' + (x > 0 ? '▲ ' : '▼ ') + pct(Math.abs(x), 0) + '</span>';
+  };
+  const ICON = {
+    geral: '<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',
+    metas: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+    produtos: '<path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/>',
+    clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.6c2 .8 3.2 2.6 3.6 5.4"/>',
+    pedidos: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    alertas: '<path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 003.4 0"/>'
+  };
+  const svgIcon = k => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ICON[k] + '</svg>';
+
+  function spark(serie, cor, cls) {
+    const s = serie.length > 1 ? serie : [0, ...serie];
+    const max = Math.max(1, ...s), w = 300, h = 60;
+    const pts = s.map((v, i) => [(i / (s.length - 1)) * w, h - 3 - (v / max) * (h - 8)]);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const id = 'g' + Math.random().toString(36).slice(2, 8);
+    return '<svg class="' + cls + '" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none"><defs><linearGradient id="' + id + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + cor + '" stop-opacity=".35"/><stop offset="1" stop-color="' + cor + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + d + ' L' + w + ' ' + h + ' L0 ' + h + ' Z" fill="url(#' + id + ')"/><path d="' + d + '" fill="none" stroke="' + cor + '" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function ring(frac, cor, rotulo, sub, cls) {
+    const r = 42, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac || 0));
+    return '<div class="ring ' + (cls || '') + '"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + css('--chip') + '" stroke-width="10"/>' +
+      '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + cor + '" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + ' ' + c.toFixed(1) + '"/></svg>' +
+      '<div class="lbl"><div><b>' + rotulo + '</b>' + (sub && cls !== 'sm' ? '<small>' + sub + '</small>' : '') + '</div></div></div>';
+  }
+
+  // ======================================================================
+  // estado e preparo dos dados
+  // ======================================================================
+  let D = null, hoje = '', pedidos = [], prodPorId = {}, presentes = [], primeiraData = '';
+  let per = '30', rota = 'geral', ordemProd = { col: 'fat', dir: -1 };
+  try { per = localStorage.getItem('cv2-periodo') || per; } catch (e) {}
+  try { if (localStorage.getItem('cv2-tema') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}
+
+  function preparar(novo) {
+    D = novo;
+    hoje = ymd(new Date(D.geradoEm));
+    prodPorId = {};
+    (D.produtos || []).forEach(p => { prodPorId[p.id] = p; });
+    const taxas = D.taxas || {};
+    pedidos = (D.pedidos || []).map(p => {
+      const c = !p.det || !p.canal ? '_' : /shopify|nuvemshop|loja integrada|tray|vtex|woocommerce/i.test(p.canalNome || '') ? 'site' : (CANAIS[p.canal] ? p.canal : 'outros');
+      const itens = p.itens || [];
+      let custo = 0, custoOk = p.det && itens.length > 0;
+      itens.forEach(i => { const pr = prodPorId[i.idProduto]; if (pr && pr.custo != null) custo += pr.custo * i.qtd; else custoOk = false; });
+      const taxa = (p.total || 0) * (taxas[c] ?? CANAIS[c].taxaRef ?? 0);
+      return Object.assign({}, p, {
+        c, itens, valido: p.status !== 'cancelado', taxa,
+        margem: custoOk ? p.total - taxa - custo : null,
+        unid: sum(itens, i => i.qtd || 0),
+        quando: p.hora || (p.data + 'T12:00:00-03:00')
+      });
+    });
+    const tem = new Set(pedidos.map(p => p.c));
+    presentes = ORDEM.filter(c => tem.has(c));
+    primeiraData = pedidos.reduce((m, p) => p.data < m ? p.data : m, hoje);
+  }
+
+  function intervalo(p) {
+    const ontem = soma(hoje, -1);
+    if (p === 'hoje') return { ini: hoje, fim: hoje, aIni: ontem, aFim: ontem, rot: 'ontem', gran: 'd', nome: 'hoje' };
+    if (p === 'mes') {
+      const ini = hoje.slice(0, 8) + '01', dn = +hoje.slice(8, 10), ant = soma(ini, -1).slice(0, 7);
+      return { ini, fim: hoje, aIni: ant + '-01', aFim: ant + '-' + String(Math.min(dn, diasNoMes(ant))).padStart(2, '0'), rot: 'mesmo período do mês passado', gran: 'd', nome: 'este mês' };
+    }
+    if (p === '12m') return { ini: soma(hoje, -364), fim: hoje, aIni: soma(hoje, -729), aFim: soma(hoje, -365), rot: '12 meses anteriores', gran: 'm', nome: 'últimos 12 meses' };
+    if (p === 'tudo') return { ini: primeiraData, fim: hoje, aIni: null, aFim: null, rot: '', gran: difDias(primeiraData, hoje) > 75 ? 'm' : 'd', nome: 'todo o histórico' };
+    const n = +p;
+    return { ini: soma(hoje, -(n - 1)), fim: hoje, aIni: soma(hoje, -(2 * n - 1)), aFim: soma(hoje, -n), rot: n + ' dias anteriores', gran: n > 62 ? 'm' : 'd', nome: 'últimos ' + n + ' dias' };
+  }
+  const entre = (lista, a, b) => a ? lista.filter(p => p.data >= a && p.data <= b) : [];
+  const doCanal = c => c ? pedidos.filter(p => p.c === c) : pedidos;
+  const aEnviar = p => A_ENVIAR.includes(p.status) && difDias(p.data, hoje) <= ESQUECIDO;
+  const atrasado = p => aEnviar(p) && difDias(p.data, hoje) >= 2;
+
+  function resumo(lista) {
+    const v = lista.filter(p => p.valido);
+    const fat = sum(v, p => p.total);
+    const comM = v.filter(p => p.margem != null), fatM = sum(comM, p => p.total);
+    const clis = new Set(v.filter(p => p.cli).map(p => p.cli));
+    return {
+      fat, ped: v.length, unid: sum(v, p => p.unid), ticket: v.length ? fat / v.length : 0,
+      margem: fatM ? sum(comM, p => p.margem) : null, margemPct: fatM ? sum(comM, p => p.margem) / fatM : null, cobCusto: fat ? fatM / fat : 0,
+      canc: lista.length - v.length, cancPct: lista.length ? (lista.length - v.length) / lista.length : 0, clientes: clis.size
+    };
+  }
+
+  function buckets(I) {
+    const out = [];
+    if (I.gran === 'm') { for (let k = I.ini.slice(0, 7); k <= I.fim.slice(0, 7); k = proxMes(k)) out.push(k); }
+    else { const n = Math.max(difDias(I.ini, I.fim) + 1, 14); for (let i = n - 1; i >= 0; i--) out.push(soma(I.fim, -i)); }
+    return out;
+  }
+  const chave = (p, gran) => gran === 'm' ? p.data.slice(0, 7) : p.data;
+  const rotBucket = (k, gran) => gran === 'm' ? fmtMes(k) : fmtDia(k);
+  function serie(lista, I, f) {
+    const ks = buckets(I), m = {};
+    lista.filter(p => p.valido).forEach(p => { const k = chave(p, I.gran); m[k] = (m[k] || 0) + (f ? f(p) : p.total); });
+    return { ks, vals: ks.map(k => m[k] || 0) };
+  }
+
+  // mês corrente: quanto já passou, quanto falta
+  function mesInfo(k) {
+    k = k || hoje.slice(0, 7);
+    const dm = diasNoMes(k);
+    if (k < hoje.slice(0, 7)) return { k, dm, decorrido: dm, restantes: 0 };
+    if (k > hoje.slice(0, 7)) return { k, dm, decorrido: 0, restantes: dm };
+    const agora = new Date(new Date().toLocaleString('en-US', { timeZone: TZ }));
+    const decorrido = Math.max(0.25, (+hoje.slice(8, 10) - 1) + (agora.getHours() * 60 + agora.getMinutes()) / 1440);
+    return { k, dm, decorrido, restantes: Math.max(0.5, dm - decorrido) };
+  }
+  const metas = () => D.metas || {};
+  const metaCanal = c => ((metas().canais || {})[c]) || {};
+  const prazo = () => metas().prazo || (hoje.slice(0, 4) + '-12-31');
+  const adsMes = (k, c) => +(((D.ads || {})[k] || {})[c] || 0);
+  const fatMes = (k, c) => sum(doCanal(c).filter(p => p.valido && p.data.slice(0, 7) === k), p => p.total);
+  const pedMes = (k, c) => doCanal(c).filter(p => p.valido && p.data.slice(0, 7) === k).length;
+
+  // ======================================================================
+  // motor de recomendações (regras sobre os seus dados)
+  // ======================================================================
+  function consolidar(lista, ini, fim, aIni, aFim) {
+    const mapa = {};
+    const key = i => i.idProduto || i.sku || i.titulo;
+    const base = k => mapa[k] || (mapa[k] = { k, titulo: '', sku: '', id: null, unid: 0, fat: 0, margem: 0, temCusto: true, canais: {}, ant: 0, u14: 0, precos: {} });
+    lista.filter(p => p.valido && p.det).forEach(p => p.itens.forEach(i => {
+      const k = key(i), x = base(k);
+      x.titulo = x.titulo || i.titulo; x.sku = x.sku || i.sku; x.id = x.id || i.idProduto;
+      const v = i.qtd * i.preco;
+      if (p.data >= ini && p.data <= fim) {
+        x.unid += i.qtd; x.fat += v; x.canais[p.c] = (x.canais[p.c] || 0) + v;
+        const pc = x.precos[p.c] || (x.precos[p.c] = { v: 0, q: 0 }); pc.v += v; pc.q += i.qtd;
+        const pr = prodPorId[i.idProduto];
+        if (pr && pr.custo != null) x.margem += v - v * ((D.taxas || {})[p.c] || 0) - pr.custo * i.qtd; else x.temCusto = false;
+      }
+      if (aIni && p.data >= aIni && p.data <= aFim) x.ant += v;
+      if (p.data >= soma(hoje, -13)) x.u14 += i.qtd;
+    }));
+    return Object.values(mapa).map(x => {
+      const pr = prodPorId[x.id] || {};
+      const vel = x.u14 / 14;
+      return Object.assign(x, {
+        estoque: pr.estoque, custo: pr.custo,
+        margemPct: x.temCusto && x.fat ? x.margem / x.fat : null,
+        cobertura: pr.estoque == null ? null : vel > 0 ? pr.estoque / vel : Infinity,
+        tend: aIni && x.ant ? (x.fat - x.ant) / x.ant : null
+      });
+    });
+  }
+
+  function picos(lista) {
+    const comHora = lista.filter(p => p.valido && p.hora);
+    const ds = Array(7).fill(0);
+    lista.filter(p => p.valido).forEach(p => { ds[dow(p.data)] += p.total; });
+    const melhorDia = ds.indexOf(Math.max(...ds));
+    let melhorHora = null;
+    if (comHora.length >= 25) {
+      const hs = Array(24).fill(0);
+      comHora.forEach(p => { hs[+new Date(p.hora).toLocaleString('en-GB', { timeZone: TZ, hour: '2-digit', hour12: false }).slice(0, 2) % 24]++; });
+      melhorHora = hs.indexOf(Math.max(...hs));
+    }
+    return { melhorDia, melhorHora, temDados: lista.length >= 20 };
+  }
+
+  function gerarInsights(filtroCanal) {
+    const out = [];
+    const add = (c, nivel, icone, titulo, texto, acoes, tags) => out.push({ c, nivel, icone, titulo, texto, acoes: acoes || [], tags: tags || [] });
+    const mi = mesInfo(), k = mi.k;
+    const ini30 = soma(hoje, -29), ini90 = soma(hoje, -89);
+    const prods90 = consolidar(pedidos, ini90, hoje, null, null);
+    const canais = presentes.filter(c => c !== '_' && (!filtroCanal || c === filtroCanal));
+    if (filtroCanal && !canais.includes(filtroCanal)) canais.push(filtroCanal);
+
+    canais.forEach(c => {
+      const L = doCanal(c), nome = CANAIS[c].nome;
+      const r30 = resumo(entre(L, ini30, hoje));
+      const fm = fatMes(k, c), pm = pedMes(k, c);
+      const ticket = r30.ped ? r30.fat / r30.ped : (pm ? fm / pm : 0);
+      const top = consolidar(L, ini30, hoje, null, null).filter(x => x.fat > 0).sort((a, b) => b.fat - a.fat);
+      const mc = metaCanal(c);
+
+      // 1. meta de faturamento do canal
+      if (+mc.fat > 0) {
+        const proj = fm / mi.decorrido * mi.dm;
+        const falta = Math.max(0, mc.fat - fm), porDia = falta / mi.restantes;
+        const pedDia = ticket ? porDia / ticket : 0, ritmo = pm / mi.decorrido;
+        if (proj < mc.fat) {
+          const acoes = [];
+          if (top.length) acoes.push('Concentre Ads e destaque nos campeões do canal: <b>' + top.slice(0, 3).map(x => esc(x.titulo)).join('</b>, <b>') + '</b>.');
+          if (c === 'meli' && ticket && ticket < FRETE_GRATIS_ML) acoes.push('Ticket médio de ' + brl(ticket) + ' está abaixo de ' + brl0(FRETE_GRATIS_ML) + ': monte <b>kits de 2–3 unidades</b> para passar do frete grátis e subir o ticket.');
+          if (adsMes(k, c) === 0) acoes.push('Nenhum investimento em Ads registrado neste mês para o canal. Lance uma campanha com orçamento diário controlado e acompanhe o TACOS aqui.');
+          acoes.push('Revise títulos, fotos e preço dos anúncios com mais visitas e pouca venda — é onde a conversão sobe mais rápido.');
+          add(c, proj < mc.fat * 0.8 ? 3 : 2, '🎯', nome + ': faltam ' + brl0(falta) + ' para a meta de ' + nomeMes(k),
+            'No ritmo atual o mês fecha em <b>' + brl0(proj) + '</b> (' + pct(proj / mc.fat, 0) + ' da meta de ' + brl0(mc.fat) + '). Para chegar lá: <b>' + brl0(porDia) + '/dia</b> — cerca de <b>' + num(pedDia, 1) + ' pedidos/dia</b> com ticket de ' + brl(ticket) + ' (hoje você faz ' + num(ritmo, 1) + '/dia).',
+            acoes, ['Meta', 'Impacto alto']);
+        } else {
+          add(c, 0, '🚀', nome + ': no ritmo para bater a meta', 'Projeção de <b>' + brl0(proj) + '</b> em ' + nomeMes(k) + ' (' + pct(proj / mc.fat, 0) + ' da meta). Mantenha o investimento e garanta estoque dos campeões.', [], ['Meta']);
+        }
+      }
+      // 2. meta de pedidos por dia (ex.: TikTok Shop)
+      if (+mc.pedidosDia > 0) {
+        const diasCom = new Set(L.filter(p => p.valido && p.data.slice(0, 7) === k).map(p => p.data));
+        const passados = +hoje.slice(8, 10);
+        let seq = 0; for (let d = hoje; ; d = soma(d, -1)) { if (L.some(p => p.valido && p.data === d)) seq++; else if (d !== hoje) break; if (seq > 400) break; }
+        const ult = L.filter(p => p.valido).reduce((m, p) => p.data > m ? p.data : m, '');
+        const semVenda = ult ? difDias(ult, hoje) : null;
+        const ok = diasCom.size >= passados * 0.9;
+        const acoes = c === 'tiktok' ? [
+          '<b>Vídeo curto todo dia</b> com o produto em uso e link na sacola — no TikTok é o conteúdo que vende, não o anúncio parado.',
+          '<b>LIVE de 1h, 2–3x por semana</b>' + (picos(pedidos).melhorHora != null ? ' por volta das <b>' + picos(pedidos).melhorHora + 'h</b> (seu horário de pico)' : ' no horário nobre (20h–22h)') + ', com oferta relâmpago exclusiva da live.',
+          '<b>Afiliados:</b> ofereça comissão atrativa e aprove pedidos de amostra — criadores trazem a primeira venda mais rápido que tráfego próprio.',
+          top.length || prods90.length ? 'Escolha um produto “porta de entrada” barato e visual (ex.: <b>' + esc((top[0] || prods90.sort((a, b) => b.unid - a.unid)[0]).titulo) + '</b>) e faça cupom de primeira compra.' : 'Escolha um produto “porta de entrada” barato e visual e faça cupom de primeira compra.',
+          'Cumpra as tarefas do período de avaliação da loja para liberar limites de pedidos e anúncios.'
+        ] : ['Aumente a frequência de ofertas e reforce Ads nos produtos campeões.'];
+        add(c, ok ? 0 : (semVenda != null && semVenda >= 3 ? 3 : 2), ok ? '✅' : '📈',
+          nome + ': ' + diasCom.size + ' de ' + passados + ' dias com venda em ' + nomeMes(k),
+          'Meta: <b>' + num(mc.pedidosDia) + ' pedido' + (mc.pedidosDia > 1 ? 's' : '') + ' por dia</b>. ' + (seq ? 'Sequência atual: <b>' + seq + ' dia' + (seq > 1 ? 's' : '') + ' seguidos</b>. ' : '') +
+          (semVenda == null ? 'Ainda não há vendas registradas neste canal.' : semVenda === 0 ? 'Já teve venda hoje.' : 'Última venda há <b>' + semVenda + ' dia' + (semVenda > 1 ? 's' : '') + '</b>.'),
+          ok ? [] : acoes, ['Meta', 'Crescimento']);
+      }
+      // 3. tendência
+      const a7 = resumo(entre(L, soma(hoje, -6), hoje)), b7 = resumo(entre(L, soma(hoje, -13), soma(hoje, -7)));
+      if (b7.fat >= 300 && a7.fat < b7.fat * 0.75) add(c, 2, '📉', nome + ': vendas caíram ' + pct(1 - a7.fat / b7.fat, 0) + ' na semana', brl0(a7.fat) + ' nos últimos 7 dias contra ' + brl0(b7.fat) + ' nos 7 anteriores.',
+        ['Verifique anúncios pausados ou sem estoque.', 'Compare seu preço com a concorrência nos itens que mais caíram.', 'Confira se a reputação/medalha do canal mudou.'], ['Desempenho']);
+      if (b7.fat >= 300 && a7.fat > b7.fat * 1.3) add(c, 0, '🔥', nome + ': semana ' + pct(a7.fat / b7.fat - 1, 0) + ' acima da anterior', brl0(a7.fat) + ' nos últimos 7 dias. Aproveite o embalo: garanta estoque e aumente o orçamento de Ads do que está puxando.', [], ['Desempenho']);
+      // 4. produtos vendidos em outros canais e ausentes neste
+      if (MARKETPLACES.includes(c)) {
+        const vendeAqui = new Set(consolidar(L, ini90, hoje, null, null).filter(x => x.fat > 0).map(x => x.k));
+        const faltam = prods90.filter(x => x.fat > 0 && !vendeAqui.has(x.k)).sort((a, b) => b.fat - a.fat).slice(0, 3);
+        if (faltam.length) add(c, 2, '🧩', faltam.length + ' campeão(ões) de outros canais sem venda no ' + nome,
+          'Produtos que já provaram demanda em outros canais e não venderam no ' + nome + ' nos últimos 90 dias:',
+          faltam.map(x => '<b>' + esc(x.titulo) + '</b> — ' + brl0(x.fat) + ' em outros canais. Anuncie (ou revise o anúncio) no ' + nome + '.'), ['Oportunidade']);
+      }
+      // 5. diferença de preço entre canais
+      top.slice(0, 8).forEach(x => {
+        const aqui = x.precos[c]; if (!aqui || !aqui.q) return;
+        const pa = aqui.v / aqui.q;
+        const outros = Object.entries(consolidar(pedidos.filter(p => p.c !== c), ini30, hoje, null, null).find(y => y.k === x.k)?.precos || {});
+        const q = sum(outros, ([, o]) => o.q), v = sum(outros, ([, o]) => o.v);
+        if (q < 3) return;
+        const po = v / q, dif = (pa - po) / po;
+        if (dif > 0.12) add(c, 1, '🏷️', esc(x.titulo) + ': ' + pct(dif, 0) + ' mais caro no ' + nome, 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais. Se a conversão estiver baixa, teste reduzir ou criar kit.', [], ['Preço']);
+        if (dif < -0.12) add(c, 1, '💰', esc(x.titulo) + ': ' + pct(-dif, 0) + ' mais barato no ' + nome, 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais — pode haver margem para subir.', [], ['Preço']);
+      });
+      // 6. dependência de um produto
+      if (top.length >= 2 && r30.fat > 0 && top[0].fat / r30.fat > 0.5) add(c, 1, '⚖️', nome + ': ' + pct(top[0].fat / r30.fat, 0) + ' do faturamento vem de um só produto', '<b>' + esc(top[0].titulo) + '</b> concentra as vendas. Use ele como porta de entrada e crie kits e anúncios relacionados para diversificar.', [], ['Mix']);
+      // 7. estoque dos campeões
+      top.slice(0, 6).filter(x => x.estoque != null && (x.estoque <= 0 || x.cobertura < 10)).forEach(x =>
+        add(c, 3, '📦', esc(x.titulo) + ': ' + (x.estoque <= 0 ? 'sem estoque' : 'estoque para ~' + Math.max(1, Math.round(x.cobertura)) + ' dias'), 'É um dos campeões do ' + nome + '. Sem estoque o anúncio perde posição e a venda vai para o concorrente.', ['Programe a reposição agora.'], ['Estoque']));
+      // 8. Ads
+      const ads = adsMes(k, c);
+      if (ads > 0 && fm > 0) {
+        const tacos = ads / fm;
+        if (tacos > 0.15) add(c, 2, '📣', nome + ': Ads consumindo ' + pct(tacos, 0) + ' do faturamento (TACOS)', 'Investido em ' + nomeMes(k) + ': ' + brl0(ads) + ' para ' + brl0(fm) + ' vendidos. Acima de ~15% costuma comer a margem.', ['Pause campanhas/anúncios sem venda nos últimos 14 dias.', 'Mova orçamento para os produtos com melhor conversão.'], ['Ads']);
+        else add(c, 0, '📣', nome + ': Ads eficientes (TACOS ' + pct(tacos, 0) + ')', 'Cada R$ 1 investido acompanhou ' + brl(fm / ads) + ' em vendas no mês. Há espaço para escalar o orçamento com cuidado.', [], ['Ads']);
+      }
+      // 9. cancelamentos
+      const l7 = entre(L, soma(hoje, -6), hoje);
+      if (l7.length >= 8 && a7.cancPct > 0.05) add(c, 2, '⛔', nome + ': ' + pct(a7.cancPct, 0) + ' de cancelamentos na semana', a7.canc + ' pedidos cancelados. Cancelamento alto derruba reputação e posição nos resultados.', ['Confira estoque real x estoque anunciado.', 'Veja se os prazos de envio estão realistas.'], ['Operação']);
+      // 10. melhor momento
+      const pc = picos(entre(L, ini90, hoje));
+      if (pc.temDados && !filtroCanal) { /* só na página do canal */ }
+      if (pc.temDados && filtroCanal) add(c, 1, '⏰', 'Melhor momento no ' + nome + ': ' + DSEM_L[pc.melhorDia] + (pc.melhorHora != null ? ', por volta das ' + pc.melhorHora + 'h' : ''), 'É quando o canal mais fatura (últimos 90 dias). Programe promoções, aumento de orçamento de Ads e lives para esse momento.', [], ['Timing']);
+    });
+
+    if (!filtroCanal) {
+      // clientes e recompra (visão da empresa)
+      const ult = {}, cont = {};
+      pedidos.filter(p => p.valido && p.cli).forEach(p => { cont[p.cli] = (cont[p.cli] || 0) + 1; if (!ult[p.cli] || p.data > ult[p.cli]) ult[p.cli] = p.data; });
+      const total = Object.keys(cont).length;
+      const dormindo = Object.values(ult).filter(d => { const x = difDias(d, hoje); return x >= 45 && x <= 180; }).length;
+      if (total >= 30 && dormindo >= 10) add('geral', 2, '🔁', dormindo + ' clientes não compram há 45–180 dias',
+        'Clientes que já compraram são os mais baratos de reconquistar. ' + pct(Object.values(cont).filter(n => n > 1).length / total, 0) + ' da sua base já comprou mais de uma vez.',
+        ['Campanha de recompra na loja própria (cupom com validade curta).', 'Ofereça assinatura/recorrência nos produtos de consumo.', 'Kits “leve 3” para quem comprou 1 unidade.'], ['Clientes']);
+      const r30 = resumo(entre(pedidos, ini30, hoje));
+      const porC = presentes.filter(c => c !== '_').map(c => [c, resumo(entre(doCanal(c), ini30, hoje)).fat]).sort((a, b) => b[1] - a[1]);
+      if (porC.length && r30.fat && porC[0][1] / r30.fat > 0.6) add('geral', 1, '🧭', pct(porC[0][1] / r30.fat, 0) + ' das vendas dependem de ' + CANAIS[porC[0][0]].nome, 'Concentração alta em um canal é risco (mudança de algoritmo, taxa ou bloqueio). As metas por canal ajudam a equilibrar.', [], ['Estratégia']);
+    }
+    return out.sort((a, b) => b.nivel - a.nivel);
+  }
+
+  function htmlInsight(x) {
+    const tagC = x.c && CANAIS[x.c] ? '<span class="pill" style="background:' + CANAIS[x.c].cor + '22;color:' + CANAIS[x.c].cor + '">' + CANAIS[x.c].nome + '</span>' : '';
+    return '<div class="ins lvl' + x.nivel + '"><div class="ic">' + x.icone + '</div><div><span class="tit">' + x.titulo + '</span><p>' + x.texto + '</p>' +
+      (x.acoes.length ? '<ul>' + x.acoes.map(a => '<li>' + a + '</li>').join('') + '</ul>' : '') +
+      '<div class="tags">' + tagC + x.tags.map(t => '<span class="pill p-mut">' + t + '</span>').join('') + '</div></div></div>';
+  }
+
+  // ======================================================================
+  // gráficos
+  // ======================================================================
+  const charts = {};
+  function grafico(id, cfg) {
+    const el = $(id);
+    if (!el) return;
+    if (!window.Chart) { el.parentNode.innerHTML = '<div class="vazio">Gráfico indisponível sem internet.</div>'; return; }
+    if (charts[id]) charts[id].destroy();
+    Chart.defaults.font.family = 'Inter, "Segoe UI", system-ui, sans-serif';
+    Chart.defaults.color = css('--muted');
+    Chart.defaults.borderColor = css('--line');
+    Chart.defaults.animation = false;
+    charts[id] = new Chart(el, cfg);
+  }
+  function limparGraficos() { Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; }); }
+  const tooltipBrl = { callbacks: { label: c => c.dataset.label + ': ' + brl(c.raw) } };
+  const legenda = itens => '<div class="legend">' + itens.map(([n, cor, x]) => '<span><i style="background:' + cor + '"></i>' + esc(n) + (x ? ' <b>' + x + '</b>' : '') + '</span>').join('') + '</div>';
+
+  // ======================================================================
+  // estrutura: menu, cabeçalho, status
+  // ======================================================================
+  function menu() {
+    const fatHoje = c => sum(doCanal(c).filter(p => p.valido && p.data === hoje), p => p.total);
+    const nAlertas = calcularAlertas().filter(a => a.nivel >= 2).length;
+    const link = (r, html) => '<a href="#/' + r + '" class="' + (rota === r ? 'on' : '') + '">' + html + '</a>';
+    $('nav').innerHTML =
+      link('geral', svgIcon('geral') + 'Visão geral') +
+      link('metas', svgIcon('metas') + 'Metas & plano') +
+      '<div class="grp">Canais</div>' +
+      presentes.filter(c => c !== '_').map(c => link('canal/' + c, '<span class="cdot" style="background:' + CANAIS[c].cor + ';box-shadow:0 0 8px ' + CANAIS[c].cor + '"></span>' + CANAIS[c].nome + '<span class="val">' + (fatHoje(c) ? brlK(fatHoje(c)) : '') + '</span>')).join('') +
+      MARKETPLACES.filter(c => !presentes.includes(c)).map(c => link('canal/' + c, '<span class="cdot" style="background:' + CANAIS[c].cor + ';opacity:.4"></span><span class="dim">' + CANAIS[c].nome + '</span>')).join('') +
+      '<div class="grp">Análises</div>' +
+      link('produtos', svgIcon('produtos') + 'Produtos') +
+      link('clientes', svgIcon('clientes') + 'Clientes') +
+      link('pedidos', svgIcon('pedidos') + 'Pedidos') +
+      link('alertas', svgIcon('alertas') + 'Alertas' + (nAlertas ? '<span class="bdg">' + nAlertas + '</span>' : ''));
+    const nome = D.empresa || 'Minha Empresa';
+    $('empresa').textContent = nome;
+    $('logo').textContent = nome.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    document.querySelectorAll('#periodos button').forEach(b => b.classList.toggle('on', b.dataset.p === per));
+  }
+
+  let online = true;
+  function statusLinha() {
+    if (!D) return;
+    const s = D.sync || {};
+    const ult = s.ultimaListagem || D.geradoEm;
+    const quando = new Date(ult).toLocaleString('pt-BR', { timeZone: TZ, dateStyle: 'short', timeStyle: 'short' });
+    let h;
+    if (!vivo) h = 'Dados de ' + quando;
+    else if (!online) h = '<span class="live"><i class="dotlive off"></i>Painel desligado</span>';
+    else if (s.status === 'erro') h = '<span class="live"><i class="dotlive warn"></i>Tiny com problema</span>';
+    else if (Date.now() - new Date(ult) > 10 * 6e4) h = '<span class="live"><i class="dotlive warn"></i>Sem atualização desde ' + quando + '</span>';
+    else h = '<span class="live"><i class="dotlive"></i>Ao vivo · ' + atras(ult) + '</span>';
+    $('status').innerHTML = h + '<div class="dim tiny" style="margin-top:4px">' + esc(D.fonte || '') + ' · ' + num(s.pedidos || pedidos.length) + ' pedidos</div>';
+  }
+
+  function avisos() {
+    const av = [];
+    const s = D.sync || {};
+    if (D.demo) av.push('<b>Dados fictícios.</b> Esta é a demonstração; o portal real lê o Olist Tiny.');
+    if (!D.demo && s.fila > 0) av.push('<b>Carregando o histórico completo do Tiny:</b> ' + num(s.detalhados) + ' de ' + num(s.pedidos) + ' pedidos detalhados (' + pct(s.pedidos ? s.detalhados / s.pedidos : 0, 0) + '). Pedidos novos entram primeiro; canais, produtos e clientes se completam conforme avança.');
+    $('avisos').innerHTML = av.map(a => '<div class="aviso">' + a + '</div>').join('');
+  }
+
+  function titulo(t, sub) { $('titulo').textContent = t; $('subtitulo').innerHTML = sub || ''; document.title = t + ' · ' + (D.empresa || 'Central de Vendas'); }
+
+  // ======================================================================
+  // páginas
+  // ======================================================================
+  const tile = (lbl, v, c, sp) => '<div class="card kpi">' + (sp || '') + '<div class="lbl">' + lbl + '</div><div class="v num">' + v + '</div><div class="c">' + (c || '') + '</div></div>';
+  const vs = (I, a, b, fmt, inv) => I.aIni ? delta(a, b, inv) + ' vs ' + I.rot + ' <span class="dim">(' + fmt(b) + ')</span>' : '<span class="dim">' + I.nome + '</span>';
+
+  // ---------- visão geral ----------
+  function pgGeral() {
+    const I = intervalo(per);
+    const atual = entre(pedidos, I.ini, I.fim), ant = entre(pedidos, I.aIni, I.aFim);
+    const A = resumo(atual), B = resumo(ant);
+    const S = serie(pedidos, I);
+    titulo('Visão geral', 'Todos os canais · ' + I.nome);
+
+    // hoje ao vivo x mesmo dia da semana nas 4 semanas anteriores
+    const hojeR = resumo(entre(pedidos, hoje, hoje));
+    const agoraMin = (() => { const a = new Date(new Date().toLocaleString('en-US', { timeZone: TZ })); return a.getHours() * 60 + a.getMinutes(); })();
+    const ref = [7, 14, 21, 28].map(n => sum(pedidos.filter(p => p.valido && p.data === soma(hoje, -n)), p => p.total));
+    const mediaDia = sum(ref) / 4;
+    const ritmo = mediaDia ? hojeR.fat / (mediaDia * Math.max(0.05, agoraMin / 1440)) : null;
+    const ultimo = pedidos.slice().sort((a, b) => b.quando.localeCompare(a.quando))[0];
+
+    // metas
+    const mi = mesInfo();
+    const metaG = +D.metaMensal || 0, fatG = fatMes(mi.k);
+    const diasPrazo = Math.max(0, difDias(hoje, prazo()));
+    const metasCanais = presentes.concat(MARKETPLACES).filter((c, i, a) => a.indexOf(c) === i && c !== '_' && (+metaCanal(c).fat > 0 || +metaCanal(c).pedidosDia > 0));
+
+    const adsK = sum(Object.keys(CANAIS), c => adsMes(mi.k, c));
+    const ins = gerarInsights();
+
+    $('tela').innerHTML =
+      '<div class="grid g21">' +
+        '<div class="card hero"><div class="eyebrow">Faturamento · ' + I.nome + '</div>' +
+          '<div class="row" style="margin-top:6px"><div class="big num">' + brl(A.fat) + '</div>' + (I.aIni ? delta(A.fat, B.fat) : '') + '</div>' +
+          '<div class="muted tiny">' + (I.aIni ? 'vs ' + I.rot + ': ' + brl0(B.fat) : 'desde ' + fmtDia(primeiraData) + '/' + primeiraData.slice(0, 4)) + '</div>' +
+          spark(S.vals, css('--brand'), 'bigspark') +
+          '<div class="stats"><div><b class="num">' + num(A.ped) + '</b><small>pedidos</small></div><div><b class="num">' + brl(A.ticket) + '</b><small>ticket médio</small></div><div><b class="num">' + num(A.unid) + '</b><small>unidades</small></div></div></div>' +
+        '<div class="card"><div class="eyebrow">Hoje, ao vivo</div><div class="mid num" style="margin-top:8px">' + brl(hojeR.fat) + '</div>' +
+          '<div class="muted tiny">' + num(hojeR.ped) + ' pedidos · ' + (ultimo ? 'último ' + (ultimo.hora ? atras(ultimo.hora) : 'em ' + fmtDia(ultimo.data)) : '—') + '</div>' +
+          '<div style="margin:16px 0 6px" class="tiny muted">Ritmo vs ' + DSEM_L[dow(hoje)] + 's anteriores (mesmo horário)</div>' +
+          '<div class="row"><div class="mid num">' + (ritmo == null ? '—' : pct(ritmo, 0)) + '</div>' + (ritmo != null ? '<span class="delta ' + (ritmo >= 1 ? 'up' : 'down') + '">' + (ritmo >= 1 ? 'acima' : 'abaixo') + ' do normal</span>' : '') + '</div>' +
+          '<div class="tiny dim" style="margin-top:4px">Média de um(a) ' + DSEM_L[dow(hoje)] + ' inteiro(a): ' + brl0(mediaDia) + '</div>' +
+          '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)" class="row"><div><div class="eyebrow">Rumo a ' + fmtDia(prazo()) + '</div><div class="mid num">' + diasPrazo + ' dias</div></div>' +
+          (metaG ? '<div class="grow"></div>' + ring(fatG / metaG, css('--brand'), pct(fatG / metaG, 0), 'meta do mês', 'sm') : '') + '</div></div>' +
+      '</div>' +
+
+      '<div class="grid g6">' +
+        tile('Margem bruta', A.margem == null ? '—' : brl0(A.margem), A.margem == null ? 'cadastre o custo dos produtos no Tiny' : pct(A.margemPct) + ' do faturado') +
+        tile('Clientes únicos', num(A.clientes), vs(I, A.clientes, B.clientes, num)) +
+        tile('Pedidos', num(A.ped), vs(I, A.ped, B.ped, num)) +
+        tile('Ticket médio', brl(A.ticket), vs(I, A.ticket, B.ticket, brl)) +
+        tile('Ads no mês', brl0(adsK), adsK ? 'TACOS ' + pct(adsK / (fatG || 1), 1) + ' · ROAS ' + num(fatG / adsK, 1) + 'x' : '<a href="#/metas" style="color:var(--brand)">registrar investimento →</a>') +
+        tile('Cancelamentos', num(A.canc), pct(A.cancPct) + ' dos pedidos') +
+      '</div>' +
+
+      '<div class="grid g21">' +
+        '<div class="card"><h3>Faturamento por canal <small>' + (I.gran === 'm' ? 'por mês' : 'por dia') + '</small></h3><div class="chart"><canvas id="cCanais"></canvas></div><div id="legCanais"></div></div>' +
+        '<div class="card"><h3>Metas dos canais <small>' + nomeMes(mi.k) + '</small><a class="r tiny" href="#/metas" style="color:var(--brand)">editar</a></h3><div class="goal-list">' +
+          (metasCanais.length ? metasCanais.map(c => metaMini(c, mi)).join('') : '<div class="vazio">Defina metas em <a href="#/metas" style="color:var(--brand)">Metas & plano</a>.</div>') +
+        '</div></div>' +
+      '</div>' +
+
+      '<div class="card" style="margin-bottom:16px"><h3>Placar dos canais <small>' + I.nome + '</small></h3><div class="scroll"><table><thead><tr><th>Canal</th><th class="n">Faturamento</th><th class="n">Var.</th><th class="n">Pedidos</th><th class="n">Ticket</th><th class="n">Margem</th><th>Participação</th><th class="n">Ads/TACOS</th><th style="width:120px">Tendência</th></tr></thead><tbody>' +
+        presentes.filter(c => c !== '_').map(c => {
+          const a = resumo(entre(doCanal(c), I.ini, I.fim)), b = resumo(entre(doCanal(c), I.aIni, I.aFim));
+          const s = serie(doCanal(c), I).vals, ads = adsMes(mi.k, c), fm = fatMes(mi.k, c);
+          return '<tr class="link" data-ir="canal/' + c + '"><td>' + cnHtml(c) + '</td><td class="n"><b>' + brl0(a.fat) + '</b></td><td class="n">' + (I.aIni ? delta(a.fat, b.fat) : '') + '</td><td class="n">' + num(a.ped) + '</td><td class="n">' + brl(a.ticket) + '</td>' +
+            '<td class="n">' + (a.margemPct == null ? '—' : pct(a.margemPct, 0)) + '</td><td><div class="bar"><i style="width:' + (A.fat ? a.fat / A.fat * 100 : 0).toFixed(1) + '%;background:' + CANAIS[c].cor + '"></i></div><span class="tiny dim">' + pct(A.fat ? a.fat / A.fat : 0, 0) + '</span></td>' +
+            '<td class="n">' + (ads ? brl0(ads) + ' · ' + pct(ads / (fm || 1), 0) : '<span class="dim">—</span>') + '</td><td>' + spark(s, CANAIS[c].cor, 'spark" style="width:120px;height:28px') + '</td></tr>';
+        }).join('') + '</tbody></table></div></div>' +
+
+      '<div class="grid g21">' +
+        '<div class="card"><h3>Plano de ação <small>gerado a partir dos seus dados</small><a class="r tiny" href="#/metas" style="color:var(--brand)">ver tudo</a></h3>' + (ins.length ? ins.slice(0, 6).map(htmlInsight).join('') : '<div class="vazio">Sem recomendações no momento.</div>') + '</div>' +
+        '<div><div class="card" style="margin-bottom:16px"><h3>Ao vivo <small>últimos pedidos</small></h3><div class="feed" id="feed"></div></div>' +
+        '<div class="card"><h3>Participação</h3><div class="chart sm"><canvas id="cShare"></canvas></div><div id="legShare"></div></div></div>' +
+      '</div>' +
+      '<div class="grid g2"><div class="card"><h3>Quando vendemos <small id="heatSub"></small></h3><div id="heat"></div></div>' +
+        '<div class="card"><h3>Vendas por estado <small>' + I.nome + '</small></h3><div id="ufs"></div></div></div>';
+
+    const cs = presentes;
+    const val = {}; cs.forEach(c => { val[c] = {}; });
+    atualPlus(I).forEach(p => { if (val[p.c]) { const k = chave(p, I.gran); val[p.c][k] = (val[p.c][k] || 0) + p.total; } });
+    const ks = buckets(I);
+    grafico('cCanais', {
+      type: 'bar',
+      data: { labels: ks.map(k => rotBucket(k, I.gran)), datasets: cs.map(c => ({ label: CANAIS[c].nome, data: ks.map(k => val[c][k] || 0), backgroundColor: ks.map(k => (I.gran === 'm' ? k >= I.ini.slice(0, 7) : k >= I.ini) ? CANAIS[c].cor : CANAIS[c].cor + '44'), stack: 's', borderRadius: 3, maxBarThickness: 36 })) },
+      options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: { label: c => c.dataset.label + ': ' + brl(c.raw), footer: it => 'Total: ' + brl(sum(it, x => x.raw)) } } },
+        scales: { x: { stacked: true, grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } }, y: { stacked: true, ticks: { callback: v => brlK(v) } } } }
+    });
+    $('legCanais').innerHTML = legenda(cs.map(c => [CANAIS[c].nome, CANAIS[c].cor]));
+    const share = cs.map(c => [c, sum(atual.filter(p => p.c === c && p.valido), p => p.total)]).filter(x => x[1] > 0);
+    grafico('cShare', {
+      type: 'doughnut',
+      data: { labels: share.map(x => CANAIS[x[0]].nome), datasets: [{ data: share.map(x => x[1]), backgroundColor: share.map(x => CANAIS[x[0]].cor), borderColor: css('--card'), borderWidth: 3 }] },
+      options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.label + ': ' + brl(c.raw) + ' (' + pct(c.raw / (A.fat || 1), 0) + ')' } } } }
+    });
+    $('legShare').innerHTML = legenda(share.map(x => [CANAIS[x[0]].nome, CANAIS[x[0]].cor, pct(x[1] / (A.fat || 1), 0)]));
+    feed(pedidos);
+    heatmap(pedidos);
+    ufs(atual);
+  }
+  const atualPlus = I => pedidos.filter(p => p.valido && p.data >= buckets(I)[0].slice(0, 10) && p.data <= I.fim);
+
+  function metaMini(c, mi) {
+    const mc = metaCanal(c);
+    if (+mc.fat > 0) {
+      const fm = fatMes(mi.k, c), proj = fm / mi.decorrido * mi.dm;
+      return '<a class="goal-item" href="#/canal/' + c + '">' + ring(fm / mc.fat, CANAIS[c].cor, pct(fm / mc.fat, 0), '', 'sm') +
+        '<div><b>' + CANAIS[c].nome + '</b><div class="tiny muted num">' + brl0(fm) + ' de ' + brl0(mc.fat) + '</div><div class="tiny">' +
+        '<span class="delta ' + (proj >= mc.fat ? 'up' : proj >= mc.fat * 0.85 ? 'flat' : 'down') + '">projeção ' + pct(proj / mc.fat, 0) + '</span></div></div></a>';
+    }
+    const dias = new Set(doCanal(c).filter(p => p.valido && p.data.slice(0, 7) === mi.k).map(p => p.data)).size;
+    const passados = +hoje.slice(8, 10);
+    return '<a class="goal-item" href="#/canal/' + c + '">' + ring(dias / passados, CANAIS[c].cor, dias + '/' + passados, '', 'sm') +
+      '<div><b>' + CANAIS[c].nome + '</b><div class="tiny muted">dias com venda · meta ' + num(mc.pedidosDia) + '/dia</div><div class="tiny"><span class="delta ' + (dias >= passados * 0.9 ? 'up' : 'down') + '">' + pct(dias / passados, 0) + ' dos dias</span></div></div></a>';
+  }
+
+  let recentes = new Set();
+  function feed(L) {
+    const el = $('feed'); if (!el) return;
+    const ult = L.slice().sort((a, b) => b.quando.localeCompare(a.quando) || String(b.id).localeCompare(String(a.id), undefined, { numeric: true })).slice(0, 8);
+    el.innerHTML = ult.length ? ult.map(p => {
+      const it = p.itens[0];
+      const desc = it ? (p.unid > 1 ? num(p.unid) + '× ' : '') + it.titulo + (p.itens.length > 1 ? ' +' + (p.itens.length - 1) : '') : 'Pedido nº ' + p.num;
+      const st = ST[p.status] || [p.status, 'p-mut'];
+      return '<div class="it' + (recentes.has(p.id) ? ' novo' : '') + '"><div class="dot" style="background:' + CANAIS[p.c].cor + '">' + CANAIS[p.c].sigla + '</div>' +
+        '<div style="min-width:0"><div class="t1">' + esc(desc) + '</div><div class="t2">' + (p.hora ? atras(p.hora) : fmtDia(p.data)) + (p.uf ? ' · ' + esc(p.uf) : '') + (p.pj ? ' · PJ' : '') + ' · <span class="pill ' + st[1] + '">' + st[0] + '</span></div></div>' +
+        '<div class="v num">' + brl(p.total) + '</div></div>';
+    }).join('') : '<div class="vazio">Nenhum pedido ainda.</div>';
+  }
+
+  function heatmap(L) {
+    const el = $('heat'); if (!el) return;
+    const ini = soma(hoje, -59);
+    const comHora = L.filter(p => p.valido && p.hora && p.data >= ini);
+    if (comHora.length >= 25) {
+      $('heatSub').textContent = 'pedidos por dia e hora · 60 dias';
+      const m = Array.from({ length: 7 }, () => Array(24).fill(0));
+      comHora.forEach(p => { const loc = new Date(new Date(p.hora).toLocaleString('en-US', { timeZone: TZ })); m[loc.getDay()][loc.getHours()]++; });
+      const max = Math.max(1, ...m.flat());
+      let h = '<div class="heat"><div></div>' + Array.from({ length: 24 }, (_, i) => '<div class="h">' + (i % 3 === 0 ? i + 'h' : '') + '</div>').join('');
+      [1, 2, 3, 4, 5, 6, 0].forEach(d => { h += '<div class="l">' + DSEM[d] + '</div>' + m[d].map((v, hr) => '<div title="' + DSEM[d] + ' ' + hr + 'h: ' + v + ' pedidos" style="background:' + (v ? 'color-mix(in srgb, var(--brand) ' + Math.round(14 + v / max * 86) + '%, transparent)' : 'var(--chip)') + '"></div>').join(''); });
+      el.innerHTML = h + '</div>';
+    } else {
+      $('heatSub').textContent = 'faturamento médio por dia da semana · 60 dias';
+      const t = Array(7).fill(0), n = Array(7).fill(0);
+      for (let i = 0; i < 60; i++) n[dow(soma(hoje, -i))]++;
+      L.filter(p => p.valido && p.data >= ini).forEach(p => { t[dow(p.data)] += p.total; });
+      const med = t.map((v, i) => n[i] ? v / n[i] : 0), max = Math.max(1, ...med);
+      el.innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => '<div class="hbar"><b>' + DSEM[d] + '</b><div class="t"><i style="width:' + (med[d] / max * 100).toFixed(1) + '%"></i></div><span class="n">' + brlK(med[d]) + '</span></div>').join('') +
+        '<p class="vazio tiny" style="padding-bottom:0">O mapa por horário se completa conforme o portal registra os pedidos chegando ao vivo.</p>';
+    }
+  }
+
+  function ufs(L) {
+    const el = $('ufs'); if (!el) return;
+    const u = {};
+    L.filter(p => p.valido && p.uf).forEach(p => { u[p.uf] = (u[p.uf] || 0) + p.total; });
+    const top = Object.entries(u).sort((a, b) => b[1] - a[1]).slice(0, 10), max = top.length ? top[0][1] : 1;
+    el.innerHTML = top.length ? top.map(([k, v]) => '<div class="hbar"><b>' + esc(k) + '</b><div class="t"><i style="width:' + (v / max * 100).toFixed(1) + '%"></i></div><span class="n">' + brlK(v) + '</span></div>').join('') : '<div class="vazio">Sem pedidos detalhados no período.</div>';
+  }
+
+  // ---------- página de canal ----------
+  function pgCanal(c) {
+    if (!CANAIS[c]) { rota = 'geral'; return pgGeral(); }
+    const I = intervalo(per), L = doCanal(c), nome = CANAIS[c].nome, cor = CANAIS[c].cor;
+    const A = resumo(entre(L, I.ini, I.fim)), B = resumo(entre(L, I.aIni, I.aFim));
+    const tot = resumo(entre(pedidos, I.ini, I.fim)).fat;
+    titulo(nome, 'Desempenho, meta, Ads e plano de ação · ' + I.nome);
+    const mi = mesInfo(), mc = metaCanal(c);
+    const S = serie(L, I), SP = serie(L, I, () => 1);
+    const top = consolidar(L, I.ini, I.fim, I.aIni, I.aFim).filter(x => x.fat > 0).sort((a, b) => b.fat - a.fat);
+    const outrosPrecos = {};
+    consolidar(pedidos.filter(p => p.c !== c), I.ini, I.fim, null, null).forEach(x => { const q = sum(Object.values(x.precos), o => o.q); if (q) outrosPrecos[x.k] = sum(Object.values(x.precos), o => o.v) / q; });
+    const aEnv = L.filter(aEnviar).length, atr = L.filter(atrasado).length, trans = L.filter(p => p.status === 'enviado').length;
+    const clis = {}; L.filter(p => p.valido && p.cli).forEach(p => { clis[p.cli] = (clis[p.cli] || 0) + 1; });
+    const nCli = Object.keys(clis).length, rec = Object.values(clis).filter(n => n > 1).length;
+    const ins = gerarInsights(c);
+    const vazio = !L.length;
+
+    $('tela').innerHTML =
+      '<div class="banner" style="--cc:' + cor + '"><div class="ic">' + CANAIS[c].sigla + '</div><div><h2>' + nome + '</h2><div class="muted tiny">' +
+        (vazio ? 'Ainda sem pedidos deste canal no Tiny' : pct(tot ? A.fat / tot : 0, 0) + ' do faturamento da empresa · taxa estimada ' + pct((D.taxas || {})[c] ?? CANAIS[c].taxaRef ?? 0, 0)) + '</div></div>' +
+        '<div class="grow"></div><div style="text-align:right"><div class="big num">' + brl(A.fat) + '</div><div class="tiny muted">' + (I.aIni ? delta(A.fat, B.fat) + ' vs ' + I.rot : I.nome) + '</div></div></div>' +
+
+      '<div class="grid g6">' +
+        tile('Pedidos', num(A.ped), vs(I, A.ped, B.ped, num), spark(SP.vals, cor, 'spark')) +
+        tile('Ticket médio', brl(A.ticket), vs(I, A.ticket, B.ticket, brl)) +
+        tile('Unidades', num(A.unid), vs(I, A.unid, B.unid, num)) +
+        tile('Margem bruta', A.margemPct == null ? '—' : pct(A.margemPct, 0), A.margem == null ? 'sem custo no Tiny' : brl0(A.margem)) +
+        tile('Clientes', num(A.clientes), nCli ? pct(rec / nCli, 0) + ' voltaram a comprar (histórico)' : '') +
+        tile('Expedição', num(aEnv) + ' <small class="muted" style="font-size:12px">a enviar</small>', (atr ? '<span class="delta down">' + atr + ' atrasado' + (atr > 1 ? 's' : '') + '</span> ' : '<span class="delta up">em dia</span> ') + num(trans) + ' em trânsito · ' + pct(A.cancPct) + ' cancel.') +
+      '</div>' +
+
+      '<div class="grid g12">' + cardMeta(c, mi, mc, L) +
+        '<div class="card"><h3>Desempenho <small>faturamento e pedidos · ' + (I.gran === 'm' ? 'por mês' : 'por dia') + '</small></h3><div class="chart"><canvas id="cDes"></canvas></div></div>' +
+      '</div>' +
+
+      '<div class="grid g21">' +
+        '<div class="card"><h3>Plano de ação · ' + nome + ' <small>prioridades</small></h3>' + (ins.length ? ins.map(htmlInsight).join('') : '<div class="vazio">Sem recomendações para este canal agora.</div>') + '</div>' +
+        cardAds(c, mi) +
+      '</div>' +
+
+      '<div class="card" style="margin-bottom:16px"><h3>Produtos no ' + nome + ' <small>' + I.nome + '</small></h3><div class="scroll"><table><thead><tr><th>Produto</th><th class="n">Unid.</th><th class="n">Faturado</th><th class="n">Part.</th><th class="n">Preço aqui</th><th class="n">Outros canais</th><th class="n">Tendência</th><th class="n">Estoque</th></tr></thead><tbody>' +
+        (top.length ? top.slice(0, 15).map(x => {
+          const pa = x.precos[c] && x.precos[c].q ? x.precos[c].v / x.precos[c].q : null, po = outrosPrecos[x.k];
+          return '<tr><td class="tt">' + esc(x.titulo) + '<div class="sku">' + esc(x.sku) + '</div></td><td class="n">' + num(x.unid) + '</td><td class="n">' + brl0(x.fat) + '</td><td class="n">' + pct(A.fat ? x.fat / A.fat : 0, 0) + '</td>' +
+            '<td class="n">' + (pa ? brl(pa) : '—') + '</td><td class="n">' + (po ? brl(po) + ' ' + (pa ? delta(pa, po) : '') : '<span class="dim">só aqui</span>') + '</td>' +
+            '<td class="n">' + (x.tend == null ? (I.aIni ? '<span class="delta up">novo</span>' : '') : delta(x.fat, x.ant)) + '</td><td class="n">' + pillEst(x) + '</td></tr>';
+        }).join('') : '<tr><td class="vazio" colspan="8">Sem vendas neste período.</td></tr>') + '</tbody></table></div></div>' +
+
+      '<div class="grid g2"><div class="card"><h3>Quando o ' + nome + ' vende <small id="heatSub"></small></h3><div id="heat"></div></div>' +
+        '<div class="card"><h3>Ao vivo no ' + nome + '</h3><div class="feed" id="feed"></div></div></div>';
+
+    grafico('cDes', {
+      data: { labels: S.ks.map(k => rotBucket(k, I.gran)), datasets: [
+        { type: 'bar', label: 'Faturamento', data: S.vals, backgroundColor: cor + 'cc', borderRadius: 4, yAxisID: 'y', order: 2, maxBarThickness: 32 },
+        { type: 'line', label: 'Pedidos', data: SP.vals, borderColor: css('--ink'), backgroundColor: css('--ink'), pointRadius: 0, borderWidth: 2, tension: .35, yAxisID: 'y1', order: 1 }] },
+      options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: x => x.dataset.label + ': ' + (x.datasetIndex ? num(x.raw) : brl(x.raw)) } } },
+        scales: { x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } }, y: { ticks: { callback: v => brlK(v) } }, y1: { position: 'right', grid: { display: false }, ticks: { precision: 0 } } } }
+    });
+    feed(L); heatmap(L);
+    ligarAds(c);
+  }
+
+  function cardMeta(c, mi, mc, L) {
+    const cor = CANAIS[c].cor;
+    let h = '<div class="card"><h3>Meta · ' + nomeMes(mi.k) + '<a class="r tiny" href="#/metas" style="color:var(--brand)">editar</a></h3>';
+    if (!(+mc.fat > 0) && !(+mc.pedidosDia > 0)) return h + '<div class="vazio">Sem meta para este canal. <a href="#/metas" style="color:var(--brand)">Definir meta →</a></div></div>';
+    if (+mc.fat > 0) {
+      const fm = fatMes(mi.k, c), proj = fm / mi.decorrido * mi.dm, falta = Math.max(0, mc.fat - fm);
+      const r30 = resumo(entre(L, soma(hoje, -29), hoje)), ticket = r30.ped ? r30.fat / r30.ped : 0;
+      h += '<div class="goal">' + ring(fm / mc.fat, cor, pct(fm / mc.fat, 0), 'da meta') + '<div><div class="mid num">' + brl0(fm) + '</div><div class="tiny muted">de ' + brl0(mc.fat) + ' em ' + nomeMes(mi.k) + '</div>' +
+        '<div style="margin-top:8px"><span class="delta ' + (proj >= mc.fat ? 'up' : 'down') + '">projeção ' + brl0(proj) + '</span></div>' +
+        (falta ? '<div class="tiny" style="margin-top:8px">Faltam <b>' + brl0(falta) + '</b> → <b>' + brl0(falta / mi.restantes) + '/dia</b>' + (ticket ? ' ≈ <b>' + num(falta / mi.restantes / ticket, 1) + ' pedidos/dia</b>' : '') + '</div>' : '<div class="tiny" style="margin-top:8px;color:var(--good)"><b>Meta do mês batida!</b></div>') + '</div></div>';
+      // trilha até o prazo
+      const meses = []; for (let k = mi.k; k <= prazo().slice(0, 7); k = proxMes(k)) meses.push(k);
+      const passados = [soma(mi.k + '-01', -1).slice(0, 7)];
+      h += '<div class="meses" style="margin-top:18px">' + passados.concat(meses).map(k => {
+        const f = fatMes(k, c), info = mesInfo(k), pj = k === mi.k ? f / info.decorrido * info.dm : f;
+        return '<div class="mes"><span class="muted">' + fmtMes(k) + '</span><div class="t">' + (k === mi.k ? '<em style="left:0;width:' + Math.min(100, pj / mc.fat * 100).toFixed(1) + '%"></em>' : '') + '<i style="width:' + Math.min(100, f / mc.fat * 100).toFixed(1) + '%;background:' + cor + '"></i></div><span class="n tiny">' + (k > mi.k ? '<span class="dim">meta ' + brlK(mc.fat) + '</span>' : brlK(f) + ' <span class="dim">/ ' + brlK(mc.fat) + '</span>') + '</span></div>';
+      }).join('') + '</div>';
+    }
+    if (+mc.pedidosDia > 0) {
+      const porDia = {}; L.filter(p => p.valido && p.data.slice(0, 7) === mi.k).forEach(p => { porDia[p.data] = (porDia[p.data] || 0) + 1; });
+      const dm = mi.dm, pri = dow(mi.k + '-01');
+      let cal = DSEM.map(d => '<div class="h">' + d[0] + '</div>').join('') + Array(pri).fill('<div style="background:none"></div>').join('');
+      for (let d = 1; d <= dm; d++) {
+        const k = mi.k + '-' + String(d).padStart(2, '0'), n = porDia[k] || 0;
+        cal += '<div class="' + (n >= mc.pedidosDia ? 'ok' : n ? 'meio' : '') + (k === hoje ? ' hoje' : '') + (k > hoje ? ' fut' : '') + '" title="' + fmtDia(k) + ': ' + n + ' pedido(s)">' + d + '</div>';
+      }
+      const bat = Object.values(porDia).filter(n => n >= mc.pedidosDia).length, passados = +hoje.slice(8, 10);
+      h += '<div style="margin-top:' + (+mc.fat > 0 ? 18 : 0) + 'px"><div class="row"><b>' + bat + ' de ' + passados + ' dias</b><span class="muted tiny">com ' + num(mc.pedidosDia) + '+ pedido(s) · meta diária</span></div><div class="cal">' + cal + '</div></div>';
+    }
+    return h + '<div class="tiny dim" style="margin-top:12px">Prazo: ' + fmtDia(prazo()) + '/' + prazo().slice(0, 4) + ' · ' + Math.max(0, difDias(hoje, prazo())) + ' dias</div></div>';
+  }
+
+  function cardAds(c, mi) {
+    const meses = []; for (let i = 5; i >= 0; i--) meses.push(soma(mi.k + '-15', -30 * i).slice(0, 7));
+    const uniq = meses.filter((k, i) => meses.indexOf(k) === i);
+    const ads = adsMes(mi.k, c), fm = fatMes(mi.k, c), pm = pedMes(mi.k, c);
+    return '<div class="card"><h3>Ads · investimento x retorno <small>por mês</small></h3>' +
+      '<div class="stats" style="margin-top:0;margin-bottom:14px"><div><b class="num">' + (ads ? num(fm / ads, 1) + 'x' : '—') + '</b><small>ROAS (vendas ÷ Ads)</small></div><div><b class="num">' + (ads && fm ? pct(ads / fm, 1) : '—') + '</b><small>TACOS (Ads ÷ vendas)</small></div><div><b class="num">' + (ads && pm ? brl(ads / pm) : '—') + '</b><small>Ads por pedido</small></div></div>' +
+      '<div class="chart sm"><canvas id="cAds"></canvas></div>' +
+      '<div class="tiny muted" style="margin:14px 0 8px">Quanto você investiu em Ads no ' + CANAIS[c].nome + ' em cada mês:</div>' +
+      '<div class="ads-grid">' + uniq.map(k => '<label class="field">' + fmtMes(k) + '<input type="number" min="0" step="10" inputmode="decimal" data-ads="' + k + '" value="' + (adsMes(k, c) || '') + '" placeholder="R$ 0"></label>').join('') + '</div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn" id="salvarAds">Salvar investimento</button><span class="tiny dim" id="adsOk"></span></div>' +
+      '<p class="tiny dim" style="margin:12px 0 0">Campanhas, cliques e ACOS por anúncio entram automaticamente quando a API de Ads do canal for conectada.</p></div>';
+  }
+
+  function ligarAds(c) {
+    const meses = [...document.querySelectorAll('[data-ads]')].map(i => i.dataset.ads);
+    grafico('cAds', {
+      data: { labels: meses.map(fmtMes), datasets: [
+        { type: 'bar', label: 'Vendas', data: meses.map(k => fatMes(k, c)), backgroundColor: CANAIS[c].cor + '99', borderRadius: 4, yAxisID: 'y' },
+        { type: 'bar', label: 'Ads', data: meses.map(k => adsMes(k, c)), backgroundColor: css('--warn'), borderRadius: 4, yAxisID: 'y' }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { display: true, labels: { boxWidth: 10 } }, tooltip: tooltipBrl }, scales: { x: { grid: { display: false } }, y: { ticks: { callback: v => brlK(v) } } } }
+    });
+    const b = $('salvarAds');
+    if (b) b.onclick = async () => {
+      const ads = JSON.parse(JSON.stringify(D.ads || {}));
+      document.querySelectorAll('[data-ads]').forEach(i => { const k = i.dataset.ads; ads[k] = ads[k] || {}; ads[k][c] = +i.value || 0; });
+      await salvar({ ads });
+      $('adsOk').textContent = 'Salvo ✓';
+    };
+  }
+
+  async function salvar(parcial) {
+    const corpo = Object.assign({ metas: D.metas || {}, ads: D.ads || {}, metaMensal: +D.metaMensal || 0 }, parcial);
+    if (!vivo) { alert('Abra o portal pelo endereço http://localhost:8787 para salvar.'); return; }
+    await fetch('salvar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+    await buscar(true);
+  }
+
+  // ---------- metas & plano ----------
+  function pgMetas() {
+    titulo('Metas & plano', 'Defina onde quer chegar; o portal calcula o ritmo e o que fazer');
+    const mi = mesInfo(), m = metas();
+    const lista = ORDEM.filter(c => c !== '_' && (presentes.includes(c) || MARKETPLACES.includes(c)));
+    const ins = gerarInsights();
+    $('tela').innerHTML =
+      '<div class="grid g12"><div class="card"><h3>Metas mensais</h3>' +
+        '<label class="field" style="margin-bottom:12px">Meta da empresa (todos os canais) · R$ por mês<input id="mGeral" type="number" min="0" step="100" value="' + (+D.metaMensal || '') + '"></label>' +
+        '<label class="field" style="margin-bottom:16px">Prazo<input id="mPrazo" type="date" value="' + prazo() + '"></label>' +
+        '<table><thead><tr><th>Canal</th><th>R$ / mês</th><th>Pedidos / dia</th></tr></thead><tbody>' +
+        lista.map(c => '<tr><td>' + cnHtml(c) + '</td><td><input class="mFat" data-c="' + c + '" type="number" min="0" step="100" style="width:110px;border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:6px 8px" value="' + (+metaCanal(c).fat || '') + '"></td>' +
+          '<td><input class="mPed" data-c="' + c + '" type="number" min="0" step="1" style="width:80px;border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:6px 8px" value="' + (+metaCanal(c).pedidosDia || '') + '"></td></tr>').join('') +
+        '</tbody></table><div class="row" style="margin-top:14px"><button class="btn" id="salvarMetas">Salvar metas</button><span class="tiny dim" id="metasOk"></span></div></div>' +
+        '<div class="card"><h3>Acompanhamento até ' + fmtDia(prazo()) + '</h3><div class="scroll"><table><thead><tr><th>Canal</th><th class="n">Mês passado</th><th class="n">' + fmtMes(mi.k) + ' (até agora)</th><th class="n">Projeção</th><th class="n">Meta</th><th class="n">Por dia p/ bater</th></tr></thead><tbody>' +
+          lista.filter(c => +metaCanal(c).fat > 0 || +metaCanal(c).pedidosDia > 0).map(c => {
+            const mc = metaCanal(c), fm = fatMes(mi.k, c), proj = fm / mi.decorrido * mi.dm, ant = fatMes(soma(mi.k + '-01', -1).slice(0, 7), c);
+            if (+mc.fat > 0) return '<tr><td>' + cnHtml(c) + '</td><td class="n">' + brl0(ant) + '</td><td class="n">' + brl0(fm) + '</td><td class="n">' + brl0(proj) + ' ' + delta(proj, mc.fat) + '</td><td class="n">' + brl0(mc.fat) + '</td><td class="n">' + (fm >= mc.fat ? '<span class="delta up">batida</span>' : brl0((mc.fat - fm) / mi.restantes)) + '</td></tr>';
+            const dias = new Set(doCanal(c).filter(p => p.valido && p.data.slice(0, 7) === mi.k).map(p => p.data)).size;
+            return '<tr><td>' + cnHtml(c) + '</td><td class="n">' + num(pedMes(soma(mi.k + '-01', -1).slice(0, 7), c)) + ' ped.</td><td class="n">' + num(pedMes(mi.k, c)) + ' ped.</td><td class="n">' + dias + ' dias c/ venda</td><td class="n">' + num(mc.pedidosDia) + '/dia</td><td class="n">' + num(mc.pedidosDia) + ' pedido(s)</td></tr>';
+          }).join('') + '</tbody></table></div>' +
+          (+D.metaMensal ? '<div style="margin-top:16px" class="row">' + ring(fatMes(mi.k) / D.metaMensal, css('--brand'), pct(fatMes(mi.k) / D.metaMensal, 0), 'empresa') + '<div><b>Empresa em ' + nomeMes(mi.k) + '</b><div class="muted tiny">' + brl0(fatMes(mi.k)) + ' de ' + brl0(D.metaMensal) + ' · projeção ' + brl0(fatMes(mi.k) / mi.decorrido * mi.dm) + '</div></div></div>' : '') +
+        '</div></div>' +
+      '<div class="card"><h3>Plano de ação completo <small>' + ins.length + ' recomendações, das mais urgentes para as menos</small></h3>' + (ins.length ? ins.map(htmlInsight).join('') : '<div class="vazio">Sem recomendações agora.</div>') + '</div>';
+
+    $('salvarMetas').onclick = async () => {
+      const canais = {};
+      document.querySelectorAll('.mFat').forEach(i => { canais[i.dataset.c] = canais[i.dataset.c] || {}; canais[i.dataset.c].fat = +i.value || 0; });
+      document.querySelectorAll('.mPed').forEach(i => { canais[i.dataset.c] = canais[i.dataset.c] || {}; canais[i.dataset.c].pedidosDia = +i.value || 0; });
+      await salvar({ metas: { prazo: $('mPrazo').value || prazo(), canais }, metaMensal: +$('mGeral').value || 0 });
+      $('metasOk').textContent = 'Salvo ✓';
+    };
+  }
+
+  // ---------- produtos ----------
+  const pillEst = x => x.estoque == null ? '<span class="pill p-mut">…</span>' : '<span class="pill ' + (x.estoque <= 0 ? 'p-bad' : x.cobertura < 7 ? 'p-warn' : 'p-mut') + '">' + num(x.estoque) + '</span>';
+  const txtCob = x => x.cobertura == null ? '—' : x.cobertura === Infinity ? '<span class="dim">sem giro</span>' : x.estoque <= 0 ? '<b style="color:var(--bad)">esgotado</b>' : x.cobertura < 1 ? '<b style="color:var(--bad)">&lt; 1 dia</b>' : Math.round(x.cobertura) + ' d';
+  const barraCanais = x => '<div class="stack" title="' + Object.entries(x.canais).map(([c, v]) => CANAIS[c].nome + ': ' + brl(v)).join(' · ') + '">' + ORDEM.filter(c => x.canais[c]).map(c => '<i style="width:' + (x.canais[c] / x.fat * 100).toFixed(1) + '%;background:' + CANAIS[c].cor + '"></i>').join('') + '</div>';
+
+  function pgProdutos() {
+    const I = intervalo(per);
+    titulo('Produtos', 'Consolidado de todos os canais · curva ABC · ' + I.nome);
+    $('tela').innerHTML = '<div class="card"><div class="tools"><input id="bp" placeholder="Buscar produto ou SKU"><select id="fp"><option value="">Todos</option><option value="A">Curva A (80% do faturamento)</option><option value="ruptura">Sem estoque / acabando</option><option value="margem">Margem baixa</option><option value="parados">Sem venda no período</option></select></div><div class="scroll"><table id="tp"></table></div></div>';
+    const desenhar = () => {
+      let lista = consolidar(pedidos, I.ini, I.fim, I.aIni, I.aFim);
+      (D.produtos || []).forEach(pr => { if (!lista.some(x => x.k === pr.id)) lista.push({ k: pr.id, id: pr.id, titulo: pr.titulo, sku: pr.sku, unid: 0, fat: 0, canais: {}, estoque: pr.estoque, custo: pr.custo, cobertura: pr.estoque == null ? null : Infinity, margemPct: null, tend: null, precos: {} }); });
+      const totalF = sum(lista, x => x.fat); let acc = 0;
+      lista.sort((a, b) => b.fat - a.fat).forEach(x => { acc += x.fat; x.abc = !x.fat ? '—' : acc - x.fat < totalF * 0.8 ? 'A' : acc - x.fat < totalF * 0.95 ? 'B' : 'C'; });
+      const b = $('bp').value.trim().toLowerCase(), f = $('fp').value;
+      if (b) lista = lista.filter(x => (x.titulo + ' ' + x.sku).toLowerCase().includes(b));
+      if (f === 'A') lista = lista.filter(x => x.abc === 'A');
+      if (f === 'ruptura') lista = lista.filter(x => x.estoque != null && (x.estoque <= 0 || x.cobertura < 14));
+      if (f === 'margem') lista = lista.filter(x => x.margemPct != null && x.margemPct < 0.2);
+      if (f === 'parados') lista = lista.filter(x => !x.fat);
+      const { col, dir } = ordemProd;
+      const v = x => { const y = x[col]; return y == null ? -Infinity : typeof y === 'string' ? y.toLowerCase() : y; };
+      lista.sort((a, b2) => (v(a) > v(b2) ? 1 : v(a) < v(b2) ? -1 : 0) * dir);
+      const th = (k, t, n) => '<th class="s' + (n ? ' n' : '') + '" data-col="' + k + '">' + t + (col === k ? (dir < 0 ? ' ↓' : ' ↑') : '') + '</th>';
+      $('tp').innerHTML = '<thead><tr>' + th('titulo', 'Produto') + th('abc', 'ABC') + '<th>Canais</th>' + th('unid', 'Unid.', 1) + th('fat', 'Faturado', 1) + th('margemPct', 'Margem', 1) + th('tend', 'Tendência', 1) + th('estoque', 'Estoque', 1) + th('cobertura', 'Cobertura', 1) + '</tr></thead><tbody>' +
+        (lista.length ? lista.slice(0, 500).map(x => '<tr><td class="tt">' + esc(x.titulo) + '<div class="sku">' + esc(x.sku) + (x.custo != null ? ' · custo ' + brl(x.custo) : '') + '</div></td><td><span class="pill ' + (x.abc === 'A' ? 'p-ok' : x.abc === 'B' ? 'p-info' : 'p-mut') + '">' + x.abc + '</span></td>' +
+          '<td>' + (x.fat ? barraCanais(x) : '') + '</td><td class="n">' + num(x.unid) + '</td><td class="n">' + brl0(x.fat) + '</td><td class="n">' + (x.margemPct == null ? '—' : '<span class="pill ' + (x.margemPct < 0.1 ? 'p-bad' : x.margemPct < 0.2 ? 'p-warn' : 'p-ok') + '">' + pct(x.margemPct, 0) + '</span>') + '</td>' +
+          '<td class="n">' + (x.tend == null ? '' : delta(x.fat, x.ant)) + '</td><td class="n">' + pillEst(x) + '</td><td class="n">' + txtCob(x) + '</td></tr>').join('') : '<tr><td class="vazio" colspan="9">Nenhum produto encontrado.</td></tr>') + '</tbody>';
+    };
+    $('bp').oninput = desenhar; $('fp').oninput = desenhar;
+    $('tp').onclick = e => { const t = e.target.closest('th.s'); if (!t) return; ordemProd = { col: t.dataset.col, dir: ordemProd.col === t.dataset.col ? -ordemProd.dir : (t.dataset.col === 'titulo' || t.dataset.col === 'abc' ? 1 : -1) }; desenhar(); };
+    desenhar();
+  }
+
+  // ---------- clientes ----------
+  function pgClientes() {
+    const I = intervalo(per);
+    titulo('Clientes', 'Novos x recorrentes, recompra e valor · ' + I.nome);
+    const validos = pedidos.filter(p => p.valido && p.cli);
+    if (validos.length < 5) { $('tela').innerHTML = '<div class="card vazio">Os dados de clientes aparecem conforme o histórico do Tiny é detalhado.</div>'; return; }
+    const prim = {}, cont = {}, gasto = {}, ult = {}, canaisCli = {};
+    validos.slice().sort((a, b) => a.data.localeCompare(b.data)).forEach(p => {
+      if (!prim[p.cli]) prim[p.cli] = p.data;
+      cont[p.cli] = (cont[p.cli] || 0) + 1; gasto[p.cli] = (gasto[p.cli] || 0) + p.total; ult[p.cli] = p.data;
+      (canaisCli[p.cli] = canaisCli[p.cli] || new Set()).add(p.c);
+    });
+    const ids = Object.keys(cont), total = ids.length;
+    const recorrentes = ids.filter(i => cont[i] > 1).length;
+    const ltv = sum(ids, i => gasto[i]) / total;
+    const noPer = entre(validos, I.ini, I.fim);
+    const cliPer = new Set(noPer.map(p => p.cli));
+    const novos = [...cliPer].filter(i => prim[i] >= I.ini).length;
+    const dormindo = ids.filter(i => { const d = difDias(ult[i], hoje); return d >= 45 && d <= 180; }).length;
+    const gr = I.gran === 'm' || difDias(I.ini, I.fim) > 45 ? { ...I, gran: 'm' } : I;
+    const ks = buckets(gr);
+    const novosK = {}, recK = {};
+    validos.forEach(p => { const k = chave(p, gr.gran); const ehNovo = (gr.gran === 'm' ? prim[p.cli].slice(0, 7) : prim[p.cli]) === k; (ehNovo ? novosK : recK)[k] = (ehNovo ? novosK : recK)[k] || new Set(); (ehNovo ? novosK : recK)[k].add(p.cli); });
+    const porCanal = presentes.filter(c => c !== '_').map(c => { const cs = new Set(validos.filter(p => p.c === c).map(p => p.cli)); const rc = [...cs].filter(i => cont[i] > 1).length; return [c, cs.size, cs.size ? rc / cs.size : 0, cs.size ? sum([...cs], i => gasto[i]) / cs.size : 0]; });
+    const freq = [1, 2, 3, 4].map(n => ids.filter(i => n === 4 ? cont[i] >= 4 : cont[i] === n).length);
+
+    $('tela').innerHTML =
+      '<div class="grid g4">' +
+        tile('Clientes no período', num(cliPer.size), num(novos) + ' novos · ' + num(cliPer.size - novos) + ' voltaram') +
+        tile('Taxa de recompra', pct(recorrentes / total, 0), num(recorrentes) + ' de ' + num(total) + ' compraram 2+ vezes') +
+        tile('Valor médio por cliente', brl(ltv), 'soma de tudo que cada cliente já comprou') +
+        tile('Clientes “dormindo”', num(dormindo), 'última compra entre 45 e 180 dias — alvo de recompra') +
+      '</div>' +
+      '<div class="grid g21"><div class="card"><h3>Novos x recorrentes <small>clientes únicos por ' + (gr.gran === 'm' ? 'mês' : 'dia') + '</small></h3><div class="chart"><canvas id="cCli"></canvas></div></div>' +
+        '<div class="card"><h3>Frequência de compra</h3>' + ['1 pedido', '2 pedidos', '3 pedidos', '4 ou mais'].map((t, i) => '<div class="hbar" style="grid-template-columns:80px minmax(0,1fr) auto"><b class="tiny">' + t + '</b><div class="t"><i style="width:' + (freq[i] / Math.max(1, ...freq) * 100).toFixed(1) + '%"></i></div><span class="n">' + num(freq[i]) + '</span></div>').join('') +
+        '<p class="tiny dim">Clientes são identificados por um código anônimo derivado do CPF/CNPJ — o portal não guarda nomes nem documentos.</p></div></div>' +
+      '<div class="card"><h3>Clientes por canal</h3><div class="scroll"><table><thead><tr><th>Canal</th><th class="n">Clientes</th><th class="n">Recompra</th><th class="n">Valor médio</th></tr></thead><tbody>' +
+        porCanal.map(([c, n, r, v]) => '<tr><td>' + cnHtml(c) + '</td><td class="n">' + num(n) + '</td><td class="n">' + pct(r, 0) + '</td><td class="n">' + brl(v) + '</td></tr>').join('') + '</tbody></table></div></div>';
+    grafico('cCli', {
+      type: 'bar',
+      data: { labels: ks.map(k => rotBucket(k, gr.gran)), datasets: [
+        { label: 'Novos', data: ks.map(k => (novosK[k] || new Set()).size), backgroundColor: css('--brand'), stack: 's', borderRadius: 3 },
+        { label: 'Recorrentes', data: ks.map(k => (recK[k] || new Set()).size), backgroundColor: css('--brand2'), stack: 's', borderRadius: 3 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { labels: { boxWidth: 10 } } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, ticks: { precision: 0 } } } }
+    });
+  }
+
+  // ---------- pedidos ----------
+  function pgPedidos() {
+    const I = intervalo(per);
+    titulo('Pedidos', I.nome);
+    $('tela').innerHTML = '<div class="card"><div class="tools"><input id="bq" placeholder="Buscar nº, produto, SKU, UF ou canal"><select id="fc"><option value="">Todos os canais</option>' + presentes.map(c => '<option value="' + c + '">' + CANAIS[c].nome + '</option>').join('') + '</select>' +
+      '<select id="fs"><option value="">Todas as situações</option><option value="aberto">Em aberto</option><option value="enviar">A enviar</option><option value="enviado">Enviado</option><option value="entregue">Entregue</option><option value="cancelado">Cancelado</option></select>' +
+      '<select id="ft"><option value="">PF e PJ</option><option value="pj">Só PJ (B2B)</option><option value="pf">Só PF</option></select></div><div class="scroll"><table id="tq"></table></div></div>';
+    const desenhar = () => {
+      const b = $('bq').value.trim().toLowerCase(), c = $('fc').value, s = $('fs').value, t = $('ft').value;
+      let lista = entre(pedidos, I.ini, I.fim);
+      if (c) lista = lista.filter(p => p.c === c);
+      if (s === 'enviar') lista = lista.filter(aEnviar); else if (s) lista = lista.filter(p => p.status === s);
+      if (t) lista = lista.filter(p => t === 'pj' ? p.pj : p.pj === false);
+      if (b) lista = lista.filter(p => (p.num + ' ' + p.uf + ' ' + CANAIS[p.c].nome + ' ' + (p.canalNome || '') + ' ' + p.itens.map(i => i.titulo + ' ' + i.sku).join(' ')).toLowerCase().includes(b));
+      lista.sort((a, b2) => b2.quando.localeCompare(a.quando));
+      $('tq').innerHTML = '<thead><tr><th>Data</th><th>Nº</th><th>Canal</th><th>Itens</th><th>UF</th><th>Situação</th><th class="n">Total</th><th class="n">Margem</th></tr></thead><tbody>' +
+        (lista.length ? lista.slice(0, 500).map(p => {
+          const st = ST[p.status] || [p.status, 'p-mut'], atr = atrasado(p);
+          return '<tr><td style="white-space:nowrap">' + fmtDia(p.data) + '/' + p.data.slice(2, 4) + (p.hora ? ' ' + new Date(p.hora).toLocaleTimeString('pt-BR', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }) : '') + '</td><td>' + esc(p.num) + '</td><td>' + cnHtml(p.c) + '</td>' +
+            '<td class="tt">' + (p.det ? p.itens.map(i => (i.qtd > 1 ? num(i.qtd) + '× ' : '') + esc(i.titulo)).join('<br>') : '<span class="sku">carregando…</span>') + '</td><td>' + esc(p.uf || '') + (p.pj ? ' <span class="pill p-info">PJ</span>' : '') + '</td>' +
+            '<td><span class="pill ' + (atr ? 'p-bad' : st[1]) + '">' + st[0] + (atr ? ' · ' + difDias(p.data, hoje) + 'd' : '') + '</span></td><td class="n">' + brl(p.total) + '</td><td class="n">' + (p.margem == null ? '—' : brl(p.margem)) + '</td></tr>';
+        }).join('') + '<tr><td colspan="6"><b>' + num(lista.length) + ' pedidos</b>' + (lista.length > 500 ? ' (mostrando 500)' : '') + '</td><td class="n"><b>' + brl(sum(lista.filter(p => p.valido), p => p.total)) + '</b></td><td></td></tr>' : '<tr><td class="vazio" colspan="8">Nenhum pedido encontrado.</td></tr>') + '</tbody>';
+    };
+    ['bq', 'fc', 'fs', 'ft'].forEach(id => { $(id).oninput = desenhar; });
+    desenhar();
+  }
+
+  // ---------- alertas ----------
+  function calcularAlertas() {
+    const out = [];
+    const add = (nivel, t, d) => out.push({ nivel, t, d });
+    const s = D.sync || {};
+    if (s.status === 'erro') add(3, 'Falha ao ler o Tiny', esc(s.erro) + '. O portal tenta de novo sozinho.');
+    const atr = pedidos.filter(atrasado);
+    if (atr.length) {
+      const porC = {}; atr.forEach(p => { porC[p.c] = (porC[p.c] || 0) + 1; });
+      const pior = Math.max(...atr.map(p => difDias(p.data, hoje)));
+      add(pior >= 3 ? 3 : 2, atr.length + ' pedido(s) parado(s) na expedição há 2+ dias', Object.entries(porC).map(([c, n]) => CANAIS[c].nome + ': ' + n).join(' · ') + '. O mais antigo está há ' + pior + ' dias.');
+    }
+    const esq = pedidos.filter(p => A_ENVIAR.includes(p.status) && difDias(p.data, hoje) > ESQUECIDO);
+    if (esq.length) add(1, esq.length + ' pedido(s) com situação desatualizada no Tiny', 'Há mais de ' + ESQUECIDO + ' dias como "a enviar" (nº ' + esq.slice(0, 6).map(p => esc(p.num)).join(', ') + (esq.length > 6 ? '…' : '') + '). Provavelmente já enviados; atualize no Tiny.');
+    const prods = consolidar(pedidos, soma(hoje, -29), hoje, null, null);
+    prods.filter(x => x.estoque != null && x.estoque <= 0 && x.u14 > 0).forEach(x => add(3, 'Esgotado e vendendo: ' + x.titulo, 'Vendeu ' + num(x.u14) + ' un. em 14 dias e o estoque no Tiny está ' + (x.estoque < 0 ? 'negativo (' + num(x.estoque) + ')' : 'zerado') + '.'));
+    prods.filter(x => x.estoque > 0 && x.cobertura < 7).forEach(x => add(x.cobertura < 3 ? 3 : 2, 'Estoque acaba em ~' + Math.max(1, Math.round(x.cobertura)) + ' dia(s): ' + x.titulo, num(x.estoque) + ' un., vendendo ' + num(x.u14 / 14, 1) + '/dia.'));
+    return out.sort((a, b) => b.nivel - a.nivel);
+  }
+  function pgAlertas() {
+    titulo('Alertas', 'O que precisa de atenção agora');
+    const cor = { 3: 'var(--bad)', 2: 'var(--warn)', 1: 'var(--info)' };
+    const L = calcularAlertas();
+    $('tela').innerHTML = L.length ? L.map(a => '<div class="ins" style="grid-template-columns:6px minmax(0,1fr)"><div style="background:' + cor[a.nivel] + ';border-radius:3px"></div><div><span class="tit">' + esc(a.t) + '</span><p>' + a.d + '</p></div></div>').join('') : '<div class="card vazio">Tudo em ordem: nenhum alerta agora. ✅</div>';
+  }
+
+  // ======================================================================
+  // roteamento e renderização
+  // ======================================================================
+  function render() {
+    rota = (location.hash.replace(/^#\/?/, '') || 'geral');
+    limparGraficos();
+    menu(); avisos(); statusLinha();
+    const [a, b] = rota.split('/');
+    if (a === 'canal') pgCanal(b);
+    else if (a === 'metas') pgMetas();
+    else if (a === 'produtos') pgProdutos();
+    else if (a === 'clientes') pgClientes();
+    else if (a === 'pedidos') pgPedidos();
+    else if (a === 'alertas') pgAlertas();
+    else { rota = 'geral'; pgGeral(); }
+    menu();
+  }
+  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+  document.addEventListener('click', e => {
+    const p = e.target.closest('#periodos button');
+    if (p) { per = p.dataset.p; try { localStorage.setItem('cv2-periodo', per); } catch (x) {} render(); return; }
+    const tr = e.target.closest('tr[data-ir]');
+    if (tr) location.hash = '#/' + tr.dataset.ir;
+  });
+  $('tema').onclick = () => {
+    const claro = document.documentElement.dataset.theme !== 'light';
+    if (claro) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem('cv2-tema', claro ? 'light' : 'dark'); } catch (e) {}
+    $('tema').textContent = claro ? 'Tema escuro' : 'Tema claro';
+    render();
+  };
+  if (document.documentElement.dataset.theme === 'light') $('tema').textContent = 'Tema escuro';
+  if (window.NUVEM) $('sair').hidden = false;
+
+  // ======================================================================
+  // ao vivo
+  // ======================================================================
+  let vistos = null;
+  function avisarVendas(novas) {
+    const t = $('toast'), p = novas[0], it = (p.itens || [])[0];
+    const c = !p.det || !p.canal ? '_' : /shopify/i.test(p.canalNome || '') ? 'site' : (CANAIS[p.canal] ? p.canal : 'outros');
+    t.style.borderLeftColor = CANAIS[c].cor;
+    t.innerHTML = '<b>🛒 ' + (novas.length > 1 ? novas.length + ' vendas novas!' : 'Venda nova · ' + CANAIS[c].nome) + '</b><div class="muted tiny">' + esc(it ? it.titulo : 'Pedido nº ' + p.num) + (novas.length > 1 ? ' e mais' : '') + '</div><div class="v num">' + brl(sum(novas, x => x.total || 0)) + '</div>';
+    t.classList.add('show');
+    clearTimeout(avisarVendas.t); avisarVendas.t = setTimeout(() => t.classList.remove('show'), 12000);
+    if (!document.hasFocus()) document.title = '🛒 Venda nova! · ' + (D.empresa || '');
+    try { const ac = new AudioContext(), o = ac.createOscillator(), g = ac.createGain(); o.connect(g); g.connect(ac.destination); o.frequency.value = 880; g.gain.setValueAtTime(.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .5); o.start(); o.stop(ac.currentTime + .5); } catch (e) {}
+  }
+  function conferir(novo) {
+    const lista = novo.pedidos || [];
+    if (vistos) {
+      const hj = ymd(new Date(novo.geradoEm));
+      const novas = lista.filter(p => !vistos.has(p.id) && p.data === hj && p.status !== 'cancelado');
+      recentes = new Set(novas.map(p => p.id));
+      if (novas.length && novas.length <= 20) avisarVendas(novas);
+    }
+    vistos = new Set(lista.map(p => p.id));
+  }
+  let versao = null;
+  async function buscar(forcar) {
+    try {
+      const v = await (await fetch('versao', { cache: 'no-store' })).text();
+      online = true;
+      if (v && (v !== versao || forcar)) {
+        const novo = await (await fetch('dados.json', { cache: 'no-store' })).json();
+        versao = v; conferir(novo); preparar(novo);
+        // não redesenha enquanto a pessoa digita num campo
+        const ativo = document.activeElement;
+        if (forcar || !ativo || !/INPUT|SELECT/.test(ativo.tagName)) { const y = window.scrollY; render(); window.scrollTo(0, y); }
+      }
+    } catch (e) { online = false; }
+    statusLinha();
+  }
+  window.addEventListener('focus', () => { if (D) document.title = $('titulo').textContent + ' · ' + (D.empresa || ''); });
+
+  function iniciar(d) { versao = d.geradoEm; conferir(d); preparar(d); render(); }
+  // link publicado: os dados chegam depois, já descriptografados pela tela de senha
+  window.atualizarPortal = d => {
+    if (!D) return iniciar(d);
+    if (d.geradoEm === versao) return;
+    versao = d.geradoEm; conferir(d); preparar(d);
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+  };
+  if (window.DADOS) {
+    iniciar(window.DADOS);
+    if (vivo) { setInterval(buscar, 8000); setInterval(statusLinha, 30000); }
+  } else if (!window.ESPERAR_DADOS) {
+    $('tela').innerHTML = '<div class="aviso">Sem dados. Abra o portal pelo arquivo <b>Abrir painel.cmd</b>.</div>';
+  }
+})();
+</script>
+<!-- Tela de senha do link publicado. Os dados (dados.enc) vão criptografados:
+     PBKDF2-SHA256 (150 mil iterações) + AES-256-CBC + HMAC-SHA256, abertos só no navegador. -->
+<div id="cadeado" style="position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:radial-gradient(900px 500px at 80% -10%,#3b82f61f,transparent 60%),radial-gradient(700px 400px at 0% 100%,#22d3a61a,transparent 60%),#070b11;color:#e8eef6;font:15px/1.5 Inter,'Segoe UI',system-ui,sans-serif">
+  <form id="cadForm" style="width:100%;max-width:380px;background:#0e151f;border:1px solid #1c2735;border-radius:18px;padding:28px;box-shadow:0 20px 60px #0008">
+    <div id="cadLogo" style="width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#22d3a6,#3b82f6);color:#04110d;display:grid;place-items:center;font-weight:800;margin-bottom:16px">PV</div>
+    <h1 id="cadNome" style="font-size:20px;margin:0 0 4px">Central de Vendas</h1>
+    <p style="color:#8b9bb0;margin:0 0 18px;font-size:14px">Acesso restrito · digite a senha</p>
+    <label for="cadSenha" style="display:block;font-size:12px;color:#8b9bb0;font-weight:600;margin-bottom:6px">Senha</label>
+    <input id="cadSenha" type="password" autocomplete="current-password" required style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid #1c2735;background:#121b27;color:#e8eef6;font:inherit">
+    <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13px;color:#8b9bb0"><input id="cadLembrar" type="checkbox"> Lembrar neste aparelho</label>
+    <button id="cadBotao" type="submit" style="width:100%;margin-top:14px;padding:11px;border:0;border-radius:10px;background:linear-gradient(135deg,#22d3a6,#3b82f6);color:#04110d;font:inherit;font-weight:700;cursor:pointer">Entrar</button>
+    <div id="cadErro" style="color:#f43f5e;font-size:13px;margin-top:10px" hidden></div>
+  </form>
+</div>
+<script>
+(function () {
+  'use strict';
+  const NOME = window.LINK_EMPRESA || 'Central de Vendas';
+  document.getElementById('cadNome').textContent = NOME;
+  document.getElementById('cadLogo').textContent = NOME.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  let senha = null;
+
+  async function baixar() {
+    const r = await fetch('dados.enc?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('Não consegui baixar os dados (' + r.status + ').');
+    return new Uint8Array(await r.arrayBuffer());
+  }
+
+  async function abrir(s, b) {
+    if (b[0] !== 0x50 || b[1] !== 0x56 || b[2] !== 0x31) throw new Error('Arquivo de dados inválido.');
+    const sal = b.slice(3, 19), iv = b.slice(19, 35), mac = b.slice(35, 67), cifra = b.slice(67);
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(s), 'PBKDF2', false, ['deriveBits']);
+    const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: sal, iterations: 150000, hash: 'SHA-256' }, base, 512));
+    const kAes = await crypto.subtle.importKey('raw', bits.slice(0, 32), 'AES-CBC', false, ['decrypt']);
+    const kMac = await crypto.subtle.importKey('raw', bits.slice(32), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+    const assinado = new Uint8Array(sal.length + iv.length + cifra.length);
+    assinado.set(sal, 0); assinado.set(iv, sal.length); assinado.set(cifra, sal.length + iv.length);
+    if (!(await crypto.subtle.verify('HMAC', kMac, mac, assinado))) throw new Error('senha');
+    const plano = await crypto.subtle.decrypt({ name: 'AES-CBC', iv }, kAes, cifra);
+    const texto = await new Response(new Blob([plano]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    return JSON.parse(texto);
+  }
+
+  async function entrar(s, lembrar) {
+    const erro = document.getElementById('cadErro'), botao = document.getElementById('cadBotao');
+    erro.hidden = true; botao.disabled = true; botao.textContent = 'Abrindo…';
+    try {
+      const dados = await abrir(s, await baixar());
+      senha = s;
+      try { if (lembrar) localStorage.setItem('link-senha', s); } catch (e) {}
+      document.getElementById('cadeado').remove();
+      window.atualizarPortal(dados);
+      setInterval(atualizar, 5 * 60000);
+    } catch (e) {
+      erro.textContent = e.message === 'senha' ? 'Senha incorreta.' : e.message;
+      erro.hidden = false;
+      try { localStorage.removeItem('link-senha'); } catch (x) {}
+    } finally {
+      botao.disabled = false; botao.textContent = 'Entrar';
+    }
+  }
+
+  async function atualizar() {
+    try { window.atualizarPortal(await abrir(senha, await baixar())); } catch (e) { /* tenta de novo no próximo ciclo */ }
+  }
+
+  document.getElementById('cadForm').addEventListener('submit', e => {
+    e.preventDefault();
+    entrar(document.getElementById('cadSenha').value, document.getElementById('cadLembrar').checked);
+  });
+  let guardada = null;
+  try { guardada = localStorage.getItem('link-senha'); } catch (e) {}
+  if (guardada) entrar(guardada, true); else document.getElementById('cadSenha').focus();
+})();
+</script>
+
+</body>
+</html>
