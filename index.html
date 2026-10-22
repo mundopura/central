@@ -687,7 +687,9 @@ window.DADOS = /*DADOS*/null;
     const av = [];
     const s = D.sync || {};
     if (D.demo) av.push('<b>Dados fictícios.</b> Esta é a demonstração; o portal real lê o Olist Tiny.');
-    if (!D.demo && s.fila > 0) av.push('<b>Carregando o histórico completo do Tiny:</b> ' + num(s.detalhados) + ' de ' + num(s.pedidos) + ' pedidos detalhados (' + pct(s.pedidos ? s.detalhados / s.pedidos : 0, 0) + '). Pedidos novos entram primeiro; canais, produtos e clientes se completam conforme avança.');
+    const semTiny = /n[aã]o conectado/i.test(s.erro || '');
+    if (semTiny) av.push('<b>Tiny não conectado neste computador.</b> Os números são os que vieram salvos, de ' + new Date(D.geradoEm).toLocaleDateString('pt-BR', { timeZone: TZ }) + '. Para ficar ao vivo, rode <b>Conectar Tiny.cmd</b> com o token da API do Tiny.');
+    if (!D.demo && !semTiny && s.fila > 0) av.push('<b>Carregando o histórico completo do Tiny:</b> ' + num(s.detalhados) + ' de ' + num(s.pedidos) + ' pedidos detalhados (' + pct(s.pedidos ? s.detalhados / s.pedidos : 0, 0) + '). Pedidos novos entram primeiro; canais, produtos e clientes se completam conforme avança.');
     $('avisos').innerHTML = av.map(a => '<div class="aviso">' + a + '</div>').join('');
   }
 
