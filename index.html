@@ -106,6 +106,8 @@
   .stats div { background: var(--chip); border-radius: 10px; padding: 8px 10px; }
   .stats b { display: block; font-size: 15px; }
   .stats small { color: var(--muted); font-size: 11px; }
+  .stats4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 700px) { .stats4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   .chart { position: relative; height: 280px; }
   .chart.sm { height: 210px; }
@@ -260,6 +262,8 @@ window.DADOS = /*DADOS*/null;
     outros: { nome: 'Venda direta',  sigla: 'VD', cor: '#94a3b8' },
     _:      { nome: 'Identificando', sigla: '…',  cor: '#475569' }
   };
+  // preposicao certa: no Mercado Livre, na Amazon, na Shopee...
+  const noCanal = c => ({ amazon: 'na Amazon', shopee: 'na Shopee', site: 'na loja própria', outros: 'na venda direta' }[c] || 'no ' + CANAIS[c].nome);
   const ORDEM = ['meli', 'tiktok', 'shopee', 'amazon', 'site', 'outros', '_'];
   const MARKETPLACES = ['meli', 'tiktok', 'shopee', 'amazon'];
   const ST = {
@@ -538,9 +542,9 @@ window.DADOS = /*DADOS*/null;
       if (MARKETPLACES.includes(c)) {
         const vendeAqui = new Set(consolidar(L, ini90, hoje, null, null).filter(x => x.fat > 0).map(x => x.k));
         const faltam = prods90.filter(x => x.fat > 0 && !vendeAqui.has(x.k)).sort((a, b) => b.fat - a.fat).slice(0, 3);
-        if (faltam.length) add(c, 2, '🧩', faltam.length + ' campeão(ões) de outros canais sem venda no ' + nome,
-          'Produtos que já provaram demanda em outros canais e não venderam no ' + nome + ' nos últimos 90 dias:',
-          faltam.map(x => '<b>' + esc(x.titulo) + '</b> — ' + brl0(x.fat) + ' em outros canais. Anuncie (ou revise o anúncio) no ' + nome + '.'), ['Oportunidade']);
+        if (faltam.length) add(c, 2, '🧩', faltam.length + ' campeão(ões) de outros canais sem venda ' + noCanal(c),
+          'Produtos que já provaram demanda em outros canais e não venderam ' + noCanal(c) + ' nos últimos 90 dias:',
+          faltam.map(x => '<b>' + esc(x.titulo) + '</b> — ' + brl0(x.fat) + ' em outros canais. Anuncie (ou revise o anúncio) ' + noCanal(c) + '.'), ['Oportunidade']);
       }
       // 5. diferença de preço entre canais
       top.slice(0, 8).forEach(x => {
@@ -550,8 +554,8 @@ window.DADOS = /*DADOS*/null;
         const q = sum(outros, ([, o]) => o.q), v = sum(outros, ([, o]) => o.v);
         if (q < 3) return;
         const po = v / q, dif = (pa - po) / po;
-        if (dif > 0.12) add(c, 1, '🏷️', esc(x.titulo) + ': ' + pct(dif, 0) + ' mais caro no ' + nome, 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais. Se a conversão estiver baixa, teste reduzir ou criar kit.', [], ['Preço']);
-        if (dif < -0.12) add(c, 1, '💰', esc(x.titulo) + ': ' + pct(-dif, 0) + ' mais barato no ' + nome, 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais — pode haver margem para subir.', [], ['Preço']);
+        if (dif > 0.12) add(c, 1, '🏷️', esc(x.titulo) + ': ' + pct(dif, 0) + ' mais caro ' + noCanal(c), 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais. Se a conversão estiver baixa, teste reduzir ou criar kit.', [], ['Preço']);
+        if (dif < -0.12) add(c, 1, '💰', esc(x.titulo) + ': ' + pct(-dif, 0) + ' mais barato ' + noCanal(c), 'Preço médio de ' + brl(pa) + ' aqui contra ' + brl(po) + ' nos outros canais — pode haver margem para subir.', [], ['Preço']);
       });
       // 6. dependência de um produto
       if (top.length >= 2 && r30.fat > 0 && top[0].fat / r30.fat > 0.5) add(c, 1, '⚖️', nome + ': ' + pct(top[0].fat / r30.fat, 0) + ' do faturamento vem de um só produto', '<b>' + esc(top[0].titulo) + '</b> concentra as vendas. Use ele como porta de entrada e crie kits e anúncios relacionados para diversificar.', [], ['Mix']);
@@ -560,10 +564,34 @@ window.DADOS = /*DADOS*/null;
         add(c, 3, '📦', esc(x.titulo) + ': ' + (x.estoque <= 0 ? 'sem estoque' : 'estoque para ~' + Math.max(1, Math.round(x.cobertura)) + ' dias'), 'É um dos campeões do ' + nome + '. Sem estoque o anúncio perde posição e a venda vai para o concorrente.', ['Programe a reposição agora.'], ['Estoque']));
       // 8. Ads
       const ads = adsMes(k, c);
-      if (ads > 0 && fm > 0) {
+      if (ads > 0 && fm > 0 && !adsPainel(c)) {
         const tacos = ads / fm;
         if (tacos > 0.15) add(c, 2, '📣', nome + ': Ads consumindo ' + pct(tacos, 0) + ' do faturamento (TACOS)', 'Investido em ' + nomeMes(k) + ': ' + brl0(ads) + ' para ' + brl0(fm) + ' vendidos. Acima de ~15% costuma comer a margem.', ['Pause campanhas/anúncios sem venda nos últimos 14 dias.', 'Mova orçamento para os produtos com melhor conversão.'], ['Ads']);
         else add(c, 0, '📣', nome + ': Ads eficientes (TACOS ' + pct(tacos, 0) + ')', 'Cada R$ 1 investido acompanhou ' + brl(fm / ads) + ' em vendas no mês. Há espaço para escalar o orçamento com cuidado.', [], ['Ads']);
+      }
+      // 8b. Ads lidos no painel do marketplace
+      const pa = adsPainel(c);
+      if (pa && pa.resumo) {
+        const rr = pa.resumo, roasP = roasDe(rr) || 0, camps = pa.campanhas || [];
+        if (rr.investimento >= 50 && roasP < 1) add(c, 3, '🔻', nome + ': Ads devolveram menos do que custaram (ROAS ' + num(roasP, 2) + 'x)',
+          brl(rr.investimento) + ' investidos para ' + brl(rr.receita) + ' em vendas pelos anúncios (' + esc(pa.periodo.nome) + ').',
+          ['Não reative os anúncios como estavam: recomece só com o produto que mais vende no canal e orçamento baixo.', 'Use meta de ROAS realista (a partir de 3x) e avalie por 7 dias antes de aumentar.'], ['Ads']);
+        const semVenda = camps.filter(x => x.investimento >= 20 && !x.vendas);
+        if (semVenda.length) add(c, 2, '💸', semVenda.length + ' anúncio(s) gastando sem vender ' + noCanal(c), 'Nenhuma venda atribuída (' + esc(pa.periodo.nome) + '):',
+          semVenda.map(x => '<b>' + esc(x.nome) + '</b>: ' + brl(x.investimento) + ' investidos, ' + num(x.cliques) + ' cliques'), ['Ads']);
+        const acosAlto = camps.filter(x => x.receita > 0 && x.investimento / x.receita > 0.5);
+        if (acosAlto.length) add(c, 2, '⚠️', 'ACOS acima de 50% em ' + acosAlto.length + ' campanha(s) ' + noCanal(c), 'Mais da metade do valor vendido volta para o anúncio:',
+          acosAlto.map(x => '<b>' + esc(x.nome) + '</b>: ACOS ' + pct(x.investimento / x.receita, 0) + ' (ROAS ' + num(x.receita / x.investimento, 2) + 'x). Reduza o orçamento ou suba a meta de ROAS.'), ['Ads']);
+        const travadas = camps.filter(x => x.status !== 'pausada' && x.status !== 'encerrada' && x.roasObjetivo >= 6 && x.impressoes != null && x.impressoes < 1000);
+        if (travadas.length) add(c, 1, '🎚️', 'Meta de ROAS alta demais trava ' + travadas.length + ' campanha(s) ' + noCanal(c),
+          'Com objetivo de ' + num(travadas[0].roasObjetivo, 1) + 'x o canal quase não mostra o anúncio (menos de 1.000 impressões no período). As campanhas que vendem estão com 4x a 4,5x:',
+          travadas.map(x => '<b>' + esc(x.nome) + '</b>: ' + num(x.impressoes) + ' impressões, ' + brl(x.investimento) + ' investidos'), ['Ads']);
+        const melhor = camps.filter(x => x.investimento > 0 && x.vendas > 0).sort((a, b) => roasDe(b) - roasDe(a))[0];
+        if (melhor && roasDe(melhor) >= 2.5) add(c, 0, '🏆', 'Melhor anúncio ' + noCanal(c) + ': ' + esc(melhor.nome),
+          'ROAS de ' + num(roasDe(melhor), 2) + 'x (' + brl(melhor.investimento) + ' → ' + brl(melhor.receita) + ').' + (melhor.status === 'pausada' ? ' Está pausado: vale reativar com orçamento controlado.' : ' Bom candidato para receber mais orçamento.'), [], ['Ads']);
+      } else if (pa && !pa.resumo && c === 'tiktok') {
+        add(c, 2, '🚀', 'TikTok Shop ainda não tem nenhum anúncio', 'Para chegar a 1 pedido por dia, um GMV Max com orçamento pequeno acelera as primeiras vendas enquanto o conteúdo orgânico cresce.',
+          ['Inicie o GMV Max da loja com orçamento diário baixo (ex.: R$ 20) e meta de ROAS realista.', 'Use como criativo os vídeos que você já tem dos produtos.'], ['Ads', 'Crescimento']);
       }
       // 9. cancelamentos
       const l7 = entre(L, soma(hoje, -6), hoje);
@@ -571,7 +599,7 @@ window.DADOS = /*DADOS*/null;
       // 10. melhor momento
       const pc = picos(entre(L, ini90, hoje));
       if (pc.temDados && !filtroCanal) { /* só na página do canal */ }
-      if (pc.temDados && filtroCanal) add(c, 1, '⏰', 'Melhor momento no ' + nome + ': ' + DSEM_L[pc.melhorDia] + (pc.melhorHora != null ? ', por volta das ' + pc.melhorHora + 'h' : ''), 'É quando o canal mais fatura (últimos 90 dias). Programe promoções, aumento de orçamento de Ads e lives para esse momento.', [], ['Timing']);
+      if (pc.temDados && filtroCanal) add(c, 1, '⏰', 'Melhor momento ' + noCanal(c) + ': ' + DSEM_L[pc.melhorDia] + (pc.melhorHora != null ? ', por volta das ' + pc.melhorHora + 'h' : ''), 'É quando o canal mais fatura (últimos 90 dias). Programe promoções, aumento de orçamento de Ads e lives para esse momento.', [], ['Timing']);
     });
 
     if (!filtroCanal) {
@@ -737,6 +765,8 @@ window.DADOS = /*DADOS*/null;
             '<td class="n">' + (ads ? brl0(ads) + ' · ' + pct(ads / (fm || 1), 0) : '<span class="dim">—</span>') + '</td><td>' + spark(s, CANAIS[c].cor, 'spark" style="width:120px;height:28px') + '</td></tr>';
         }).join('') + '</tbody></table></div></div>' +
 
+      cardPublicidadeGeral() +
+
       '<div class="grid g21">' +
         '<div class="card"><h3>Plano de ação <small>gerado a partir dos seus dados</small><a class="r tiny" href="#/metas" style="color:var(--brand)">ver tudo</a></h3>' + (ins.length ? ins.slice(0, 6).map(htmlInsight).join('') : '<div class="vazio">Sem recomendações no momento.</div>') + '</div>' +
         '<div><div class="card" style="margin-bottom:16px"><h3>Ao vivo <small>últimos pedidos</small></h3><div class="feed" id="feed"></div></div>' +
@@ -864,12 +894,14 @@ window.DADOS = /*DADOS*/null;
         '<div class="card"><h3>Desempenho <small>faturamento e pedidos · ' + (I.gran === 'm' ? 'por mês' : 'por dia') + '</small></h3><div class="chart"><canvas id="cDes"></canvas></div></div>' +
       '</div>' +
 
+      cardPublicidade(c) +
+
       '<div class="grid g21">' +
         '<div class="card"><h3>Plano de ação · ' + nome + ' <small>prioridades</small></h3>' + (ins.length ? ins.map(htmlInsight).join('') : '<div class="vazio">Sem recomendações para este canal agora.</div>') + '</div>' +
         cardAds(c, mi) +
       '</div>' +
 
-      '<div class="card" style="margin-bottom:16px"><h3>Produtos no ' + nome + ' <small>' + I.nome + '</small></h3><div class="scroll"><table><thead><tr><th>Produto</th><th class="n">Unid.</th><th class="n">Faturado</th><th class="n">Part.</th><th class="n">Preço aqui</th><th class="n">Outros canais</th><th class="n">Tendência</th><th class="n">Estoque</th></tr></thead><tbody>' +
+      '<div class="card" style="margin-bottom:16px"><h3>Produtos ' + noCanal(c) + ' <small>' + I.nome + '</small></h3><div class="scroll"><table><thead><tr><th>Produto</th><th class="n">Unid.</th><th class="n">Faturado</th><th class="n">Part.</th><th class="n">Preço aqui</th><th class="n">Outros canais</th><th class="n">Tendência</th><th class="n">Estoque</th></tr></thead><tbody>' +
         (top.length ? top.slice(0, 15).map(x => {
           const pa = x.precos[c] && x.precos[c].q ? x.precos[c].v / x.precos[c].q : null, po = outrosPrecos[x.k];
           return '<tr><td class="tt">' + esc(x.titulo) + '<div class="sku">' + esc(x.sku) + '</div></td><td class="n">' + num(x.unid) + '</td><td class="n">' + brl0(x.fat) + '</td><td class="n">' + pct(A.fat ? x.fat / A.fat : 0, 0) + '</td>' +
@@ -878,7 +910,7 @@ window.DADOS = /*DADOS*/null;
         }).join('') : '<tr><td class="vazio" colspan="8">Sem vendas neste período.</td></tr>') + '</tbody></table></div></div>' +
 
       '<div class="grid g2"><div class="card"><h3>Quando o ' + nome + ' vende <small id="heatSub"></small></h3><div id="heat"></div></div>' +
-        '<div class="card"><h3>Ao vivo no ' + nome + '</h3><div class="feed" id="feed"></div></div></div>';
+        '<div class="card"><h3>Ao vivo ' + noCanal(c) + '</h3><div class="feed" id="feed"></div></div></div>';
 
     grafico('cDes', {
       data: { labels: S.ks.map(k => rotBucket(k, I.gran)), datasets: [
@@ -924,6 +956,67 @@ window.DADOS = /*DADOS*/null;
     return h + '<div class="tiny dim" style="margin-top:12px">Prazo: ' + fmtDia(prazo()) + '/' + prazo().slice(0, 4) + ' · ' + Math.max(0, difDias(hoje, prazo())) + ' dias</div></div>';
   }
 
+  // ---------- publicidade lida nos painéis de Ads dos marketplaces (ads.json) ----------
+  const adsPainel = c => ((D.adsPaineis || {}).canais || {})[c] || null;
+  const roasDe = x => x && x.investimento ? x.receita / x.investimento : null;
+  const pillRoas = r => r == null ? '<span class="dim">—</span>' : '<span class="pill ' + (r < 1 ? 'p-bad' : r < 2 ? 'p-warn' : 'p-ok') + '">' + num(r, 2) + 'x</span>';
+  const pillStatusAd = s => '<span class="pill ' + (s === 'ativa' ? 'p-ok' : s === 'aprendendo' ? 'p-info' : 'p-mut') + '">' + esc(s) + '</span>';
+
+  // TACOS real: investimento ÷ faturamento total do canal (Tiny) no mesmo período do painel
+  function tacosPainel(c, p) {
+    if (!p || !p.periodo || !p.resumo) return null;
+    const fat = sum(doCanal(c).filter(x => x.valido && x.data >= p.periodo.de && x.data <= p.periodo.ate), x => x.total);
+    return fat ? { tacos: p.resumo.investimento / fat, fat } : null;
+  }
+
+  function cardPublicidade(c) {
+    const p = adsPainel(c);
+    if (!p) return '';
+    const lido = new Date(D.adsPaineis.atualizadoEm).toLocaleString('pt-BR', { timeZone: TZ, dateStyle: 'short', timeStyle: 'short' });
+    let h = '<div class="card" style="margin-bottom:16px"><h3>Publicidade <small>' + esc(p.painel) +
+      (p.periodo ? ' · ' + esc(p.periodo.nome) + ' (' + fmtDia(p.periodo.de) + ' a ' + fmtDia(p.periodo.ate) + ')' : '') + '</small><span class="r tiny dim">lido em ' + lido + '</span></h3>';
+    if (!p.resumo) return h + (p.observacoes || []).map(o => '<div class="vazio">' + esc(o) + '</div>').join('') + '</div>';
+    const r = p.resumo, v = p.variacao || {}, roas = roasDe(r), t = tacosPainel(c, p);
+    const ctr = r.ctr != null ? r.ctr : r.impressoes ? r.cliques / r.impressoes : null;
+    const cpc = r.cpc != null ? r.cpc : r.cliques ? r.investimento / r.cliques : null;
+    const dv = k => v[k] == null ? '' : ' <span class="delta ' + (k === 'investimento' ? 'flat' : v[k] > 0 ? 'up' : 'down') + '">' + (v[k] > 0 ? '▲ ' : '▼ ') + pct(Math.abs(v[k]), 0) + '</span>';
+    const item = (lbl, val, k) => '<div><b class="num">' + val + (k ? dv(k) : '') + '</b><small>' + lbl + '</small></div>';
+    h += '<div class="stats stats4" style="margin-top:0;margin-bottom:16px">' +
+      item('Investimento', brl(r.investimento), 'investimento') + item('Vendas pelos anúncios', brl(r.receita)) +
+      item('ROAS (vendas ÷ Ads)', pillRoas(roas), 'roas') + item('ACOS (Ads ÷ vendas)', r.receita ? pct(r.investimento / r.receita, 1) : '—') +
+      item('TACOS (Ads ÷ faturamento total)', t ? pct(t.tacos, 1) : '—') + item('Vendas atribuídas', num(r.vendas), 'vendas') +
+      item('Cliques · CTR', num(r.cliques) + (ctr != null ? ' · ' + pct(ctr, 2) : ''), 'cliques') + item('Custo por clique', cpc != null ? brl(cpc) : '—') +
+      '</div>';
+    const camp = (p.campanhas || []).slice().sort((a, b) => b.investimento - a.investimento);
+    if (camp.length) {
+      h += '<div class="scroll"><table><thead><tr><th>Campanha / anúncio</th><th>Status</th><th class="n">Orçam./dia</th><th class="n">Meta ROAS</th><th class="n">Investido</th><th class="n">Vendas Ads</th><th class="n">Pedidos</th><th class="n">ROAS</th><th class="n">ACOS</th><th class="n">Impressões</th><th class="n">Cliques</th><th class="n">CTR</th></tr></thead><tbody>' +
+        camp.map(x => '<tr><td class="tt">' + esc(x.nome) + '</td><td>' + pillStatusAd(x.status) + '</td><td class="n">' + (x.orcamentoDia ? brl0(x.orcamentoDia) : '—') + '</td><td class="n">' + (x.roasObjetivo ? num(x.roasObjetivo, 1) + 'x' : '—') + '</td>' +
+          '<td class="n">' + brl(x.investimento) + '</td><td class="n">' + brl(x.receita) + '</td><td class="n">' + num(x.vendas) + '</td><td class="n">' + (x.investimento ? pillRoas(roasDe(x)) : '—') + '</td>' +
+          '<td class="n">' + (x.receita ? pct(x.investimento / x.receita, 0) : x.investimento ? '<span class="pill p-bad">sem venda</span>' : '—') + '</td><td class="n">' + (x.impressoes != null ? num(x.impressoes) : '—') + '</td><td class="n">' + num(x.cliques) + '</td>' +
+          '<td class="n">' + (x.impressoes ? pct(x.cliques / x.impressoes, 2) : '—') + '</td></tr>').join('') +
+        '</tbody></table></div>';
+    }
+    h += (p.observacoes || []).length ? '<ul class="tiny muted" style="margin:12px 0 0;padding-left:18px">' + p.observacoes.map(o => '<li>' + esc(o) + '</li>').join('') + '</ul>' : '';
+    return h + '<p class="tiny dim" style="margin:10px 0 0">Números copiados do painel de Ads do canal. Atualizam quando o Claude ler o painel de novo, e passam a ser automáticos quando a API de Ads do canal for liberada.</p></div>';
+  }
+
+  function cardPublicidadeGeral() {
+    const P = D.adsPaineis;
+    if (!P || !P.canais) return '';
+    const linhas = Object.keys(P.canais).filter(c => CANAIS[c]).map(c => [c, P.canais[c]]);
+    const tot = linhas.filter(([, p]) => p.resumo).reduce((s, [, p]) => ({ inv: s.inv + p.resumo.investimento, rec: s.rec + p.resumo.receita }), { inv: 0, rec: 0 });
+    return '<div class="card" style="margin-bottom:16px"><h3>Publicidade em todos os canais <small>lido nos painéis de Ads em ' + new Date(P.atualizadoEm).toLocaleString('pt-BR', { timeZone: TZ, dateStyle: 'short', timeStyle: 'short' }) + '</small></h3>' +
+      '<div class="scroll"><table><thead><tr><th>Canal</th><th>Período</th><th class="n">Investido</th><th class="n">Vendas pelos anúncios</th><th class="n">ROAS</th><th class="n">ACOS</th><th class="n">TACOS</th><th>Situação</th></tr></thead><tbody>' +
+      linhas.map(([c, p]) => {
+        if (!p.resumo) return '<tr class="link" data-ir="canal/' + c + '"><td>' + cnHtml(c) + '</td><td colspan="6" class="muted">' + esc((p.observacoes || [])[0] || 'Sem anúncios') + '</td><td><span class="pill p-mut">sem anúncios</span></td></tr>';
+        const r = p.resumo, t = tacosPainel(c, p), ativos = (p.campanhas || []).filter(x => x.status === 'ativa' || x.status === 'aprendendo').length;
+        return '<tr class="link" data-ir="canal/' + c + '"><td>' + cnHtml(c) + '</td><td class="tiny">' + esc(p.periodo.nome) + '</td><td class="n">' + brl(r.investimento) + '</td><td class="n">' + brl(r.receita) + '</td><td class="n">' + pillRoas(roasDe(r)) + '</td>' +
+          '<td class="n">' + (r.receita ? pct(r.investimento / r.receita, 0) : '—') + '</td><td class="n">' + (t ? pct(t.tacos, 1) : '—') + '</td><td>' + (ativos ? '<span class="pill p-ok">' + ativos + ' ativa(s)</span>' : '<span class="pill p-mut">pausado</span>') + '</td></tr>';
+      }).join('') +
+      '<tr><td><b>Total</b></td><td class="tiny dim">períodos diferentes</td><td class="n"><b>' + brl(tot.inv) + '</b></td><td class="n"><b>' + brl(tot.rec) + '</b></td><td class="n">' + pillRoas(tot.inv ? tot.rec / tot.inv : null) + '</td><td class="n">' + (tot.rec ? pct(tot.inv / tot.rec, 0) : '—') + '</td><td></td><td></td></tr>' +
+      '</tbody></table></div></div>';
+  }
+
   function cardAds(c, mi) {
     const meses = []; for (let i = 5; i >= 0; i--) meses.push(soma(mi.k + '-15', -30 * i).slice(0, 7));
     const uniq = meses.filter((k, i) => meses.indexOf(k) === i);
@@ -931,7 +1024,7 @@ window.DADOS = /*DADOS*/null;
     return '<div class="card"><h3>Ads · investimento x retorno <small>por mês</small></h3>' +
       '<div class="stats" style="margin-top:0;margin-bottom:14px"><div><b class="num">' + (ads ? num(fm / ads, 1) + 'x' : '—') + '</b><small>ROAS (vendas ÷ Ads)</small></div><div><b class="num">' + (ads && fm ? pct(ads / fm, 1) : '—') + '</b><small>TACOS (Ads ÷ vendas)</small></div><div><b class="num">' + (ads && pm ? brl(ads / pm) : '—') + '</b><small>Ads por pedido</small></div></div>' +
       '<div class="chart sm"><canvas id="cAds"></canvas></div>' +
-      '<div class="tiny muted" style="margin:14px 0 8px">Quanto você investiu em Ads no ' + CANAIS[c].nome + ' em cada mês:</div>' +
+      '<div class="tiny muted" style="margin:14px 0 8px">Quanto você investiu em Ads ' + noCanal(c) + ' em cada mês:</div>' +
       '<div class="ads-grid">' + uniq.map(k => '<label class="field">' + fmtMes(k) + '<input type="number" min="0" step="10" inputmode="decimal" data-ads="' + k + '" value="' + (adsMes(k, c) || '') + '" placeholder="R$ 0"></label>').join('') + '</div>' +
       '<div class="row" style="margin-top:12px"><button class="btn" id="salvarAds">Salvar investimento</button><span class="tiny dim" id="adsOk"></span></div>' +
       '<p class="tiny dim" style="margin:12px 0 0">Campanhas, cliques e ACOS por anúncio entram automaticamente quando a API de Ads do canal for conectada.</p></div>';
