@@ -258,13 +258,14 @@ window.DADOS = /*DADOS*/null;
     tiktok: { nome: 'TikTok Shop',   sigla: 'TT', cor: '#c06cf0' },
     shopee: { nome: 'Shopee',        sigla: 'SH', cor: '#ff6b4a' },
     amazon: { nome: 'Amazon',        sigla: 'AM', cor: '#f5a524' },
+    smartpet: { nome: 'SmartPet',    sigla: 'SP', cor: '#84cc16' },
     site:   { nome: 'Loja própria',  sigla: 'LP', cor: '#ec4899' },
     outros: { nome: 'Venda direta',  sigla: 'VD', cor: '#94a3b8' },
     _:      { nome: 'Identificando', sigla: '…',  cor: '#475569' }
   };
   // preposicao certa: no Mercado Livre, na Amazon, na Shopee...
-  const noCanal = c => ({ amazon: 'na Amazon', shopee: 'na Shopee', site: 'na loja própria', outros: 'na venda direta' }[c] || 'no ' + CANAIS[c].nome);
-  const ORDEM = ['meli', 'tiktok', 'shopee', 'amazon', 'site', 'outros', '_'];
+  const noCanal = c => ({ amazon: 'na Amazon', shopee: 'na Shopee', smartpet: 'na SmartPet', site: 'na loja própria', outros: 'na venda direta' }[c] || 'no ' + CANAIS[c].nome);
+  const ORDEM = ['meli', 'tiktok', 'shopee', 'amazon', 'smartpet', 'site', 'outros', '_'];
   const MARKETPLACES = ['meli', 'tiktok', 'shopee', 'amazon'];
   const ST = {
     aberto: ['Em aberto', 'p-mut'], aprovado: ['Aprovado', 'p-info'], preparando: ['Preparando', 'p-info'],
@@ -319,6 +320,7 @@ window.DADOS = /*DADOS*/null;
     produtos: '<path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/>',
     clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.6c2 .8 3.2 2.6 3.6 5.4"/>',
     pedidos: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    estoque: '<path d="M3 21V9l9-6 9 6v12"/><path d="M7 21v-8h10v8M7 17h10"/>',
     alertas: '<path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 003.4 0"/>'
   };
   const svgIcon = k => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ICON[k] + '</svg>';
@@ -358,7 +360,8 @@ window.DADOS = /*DADOS*/null;
       const itens = p.itens || [];
       let custo = 0, custoOk = p.det && itens.length > 0;
       itens.forEach(i => { const pr = prodPorId[i.idProduto]; if (pr && pr.custo != null) custo += pr.custo * i.qtd; else custoOk = false; });
-      const taxa = (p.total || 0) * (taxas[c] ?? CANAIS[c].taxaRef ?? 0);
+      // SmartPet (consignado) traz comissão + taxas reais da planilha; os demais usam a taxa estimada do canal
+      const taxa = p.taxaReal != null ? p.taxaReal : (p.total || 0) * (taxas[c] ?? CANAIS[c].taxaRef ?? 0);
       return Object.assign({}, p, {
         c, itens, valido: p.status !== 'cancelado', taxa,
         margem: custoOk ? p.total - taxa - custo : null,
@@ -659,6 +662,7 @@ window.DADOS = /*DADOS*/null;
       MARKETPLACES.filter(c => !presentes.includes(c)).map(c => link('canal/' + c, '<span class="cdot" style="background:' + CANAIS[c].cor + ';opacity:.4"></span><span class="dim">' + CANAIS[c].nome + '</span>')).join('') +
       '<div class="grp">Análises</div>' +
       link('produtos', svgIcon('produtos') + 'Produtos') +
+      ((D.estoque || []).length ? link('estoque', svgIcon('estoque') + 'Estoque próprio') : '') +
       link('clientes', svgIcon('clientes') + 'Clientes') +
       link('pedidos', svgIcon('pedidos') + 'Pedidos') +
       link('alertas', svgIcon('alertas') + 'Alertas' + (nAlertas ? '<span class="bdg">' + nAlertas + '</span>' : ''));
@@ -896,7 +900,7 @@ window.DADOS = /*DADOS*/null;
         '<div class="card"><h3>Desempenho <small>faturamento e pedidos · ' + (I.gran === 'm' ? 'por mês' : 'por dia') + '</small></h3><div class="chart"><canvas id="cDes"></canvas></div></div>' +
       '</div>' +
 
-      cardPublicidade(c) +
+      (c === 'smartpet' ? cardSmartPet(I, L) : cardPublicidade(c)) +
 
       '<div class="grid g21">' +
         '<div class="card"><h3>Plano de ação · ' + nome + ' <small>prioridades</small></h3>' + (ins.length ? ins.map(htmlInsight).join('') : '<div class="vazio">Sem recomendações para este canal agora.</div>') + '</div>' +
@@ -1214,6 +1218,8 @@ window.DADOS = /*DADOS*/null;
     if (esq.length) add(1, esq.length + ' pedido(s) com situação desatualizada no Tiny', 'Há mais de ' + ESQUECIDO + ' dias como "a enviar" (nº ' + esq.slice(0, 6).map(p => esc(p.num)).join(', ') + (esq.length > 6 ? '…' : '') + '). Provavelmente já enviados; atualize no Tiny.');
     const prods = consolidar(pedidos, soma(hoje, -29), hoje, null, null);
     prods.filter(x => x.estoque != null && x.estoque <= 0 && x.u14 > 0).forEach(x => add(3, 'Esgotado e vendendo: ' + x.titulo, 'Vendeu ' + num(x.u14) + ' un. em 14 dias e o estoque no Tiny está ' + (x.estoque < 0 ? 'negativo (' + num(x.estoque) + ')' : 'zerado') + '.'));
+    contagensEstoque().ultima.filter(x => !x.encerrado && x.total != null && x.total <= 15).forEach(x =>
+      add(x.total <= 5 ? 3 : 2, 'Estoque próprio baixo: ' + x.nome + ' (' + num(x.total) + ' un.)', 'Na contagem de ' + fmtDia(contagensEstoque().data) + ' da planilha de estoque.'));
     prods.filter(x => x.estoque > 0 && x.cobertura < 7).forEach(x => add(x.cobertura < 3 ? 3 : 2, 'Estoque acaba em ~' + Math.max(1, Math.round(x.cobertura)) + ' dia(s): ' + x.titulo, num(x.estoque) + ' un., vendendo ' + num(x.u14 / 14, 1) + '/dia.'));
     return out.sort((a, b) => b.nivel - a.nivel);
   }
@@ -1235,6 +1241,7 @@ window.DADOS = /*DADOS*/null;
     if (a === 'canal') pgCanal(b);
     else if (a === 'metas') pgMetas();
     else if (a === 'produtos') pgProdutos();
+    else if (a === 'estoque') pgEstoque();
     else if (a === 'clientes') pgClientes();
     else if (a === 'pedidos') pgPedidos();
     else if (a === 'alertas') pgAlertas();
