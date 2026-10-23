@@ -902,9 +902,10 @@ window.DADOS = /*DADOS*/null;
 
       (c === 'smartpet' ? cardSmartPet(I, L) : cardPublicidade(c)) +
 
-      '<div class="grid g21">' +
+      // consignado não tem Ads: o plano de ação ocupa a largura toda
+      '<div class="grid' + (c === 'smartpet' ? '' : ' g21') + '">' +
         '<div class="card"><h3>Plano de ação · ' + nome + ' <small>prioridades</small></h3>' + (ins.length ? ins.map(htmlInsight).join('') : '<div class="vazio">Sem recomendações para este canal agora.</div>') + '</div>' +
-        cardAds(c, mi) +
+        (c === 'smartpet' ? '' : cardAds(c, mi)) +
       '</div>' +
 
       '<div class="card" style="margin-bottom:16px"><h3>Produtos ' + noCanal(c) + ' <small>' + I.nome + '</small></h3><div class="scroll"><table><thead><tr><th>Produto</th><th class="n">Unid.</th><th class="n">Faturado</th><th class="n">Part.</th><th class="n">Preço aqui</th><th class="n">Outros canais</th><th class="n">Tendência</th><th class="n">Estoque</th></tr></thead><tbody>' +
@@ -1021,6 +1022,77 @@ window.DADOS = /*DADOS*/null;
       }).join('') +
       '<tr><td><b>Total</b></td><td class="tiny dim">períodos diferentes</td><td class="n"><b>' + brl(tot.inv) + '</b></td><td class="n"><b>' + brl(tot.rec) + '</b></td><td class="n">' + pillRoas(tot.inv ? tot.rec / tot.inv : null) + '</td><td class="n">' + (tot.rec ? pct(tot.inv / tot.rec, 0) : '—') + '</td><td></td><td></td></tr>' +
       '</tbody></table></div></div>';
+  }
+
+  // ---------- SmartPet: vendas em consignado (aba "SmartPet" da planilha, só leitura) ----------
+  function cardSmartPet(I, L) {
+    const v = entre(L, I.ini, I.fim).filter(p => p.valido);
+    const unid = x => sum(x, p => p.unid), bruto = x => sum(x, p => p.total), campo = k => x => sum(x, p => p[k] || 0);
+    const grupo = (lista, chave) => { const m = {}; lista.forEach(p => { const k = chave(p); (m[k] = m[k] || []).push(p); }); return Object.entries(m).sort((a, b) => bruto(b[1]) - bruto(a[1])); };
+    const P = D.planilha || {};
+    const lida = P.lidaEm ? new Date(P.lidaEm).toLocaleString('pt-BR', { timeZone: TZ, dateStyle: 'short', timeStyle: 'short' }) : '—';
+    const item = (lbl, val) => '<div><b class="num">' + val + '</b><small>' + lbl + '</small></div>';
+    const tab = (tit, cab, linhas, n) => '<h3 style="margin-top:20px">' + tit + '</h3><div class="scroll"><table><thead><tr>' + cab.map((c, i) => '<th' + (i >= n ? ' class="n"' : '') + '>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+      (linhas || '<tr><td class="vazio" colspan="' + cab.length + '">Sem vendas no período.</td></tr>') + '</tbody></table></div>';
+    let h = (P.status === 'erro' ? '<div class="aviso"><b>Não consegui ler a planilha agora:</b> ' + esc(P.erro) + '. Mostrando a última leitura.</div>' : '') +
+      '<div class="card" style="margin-bottom:16px"><h3>Vendas em consignado <small>' + I.nome + '</small><span class="r tiny dim">planilha lida em ' + lida + '</span></h3>' +
+      '<div class="stats stats4" style="margin-top:0">' + item('Vendas', num(v.length)) + item('Unidades', num(unid(v))) + item('Valor bruto', brl(bruto(v))) + item('Comissões das vendedoras', brl(campo('comissao')(v))) +
+      item('Taxas', brl(campo('taxas')(v))) + item('Valor líquido', brl(campo('liquido')(v))) + item('Ticket médio', brl(v.length ? bruto(v) / v.length : 0)) + item('Lojas com venda', num(new Set(v.map(p => p.loja)).size)) + '</div>';
+    h += tab('Por loja', ['Loja', 'Vendas', 'Unid.', 'Bruto', 'Comissão', 'Taxas', 'Líquido', 'Part.'],
+      grupo(v, p => p.loja || '—').map(([k, x]) => '<tr><td><b>' + esc(k) + '</b></td><td class="n">' + num(x.length) + '</td><td class="n">' + num(unid(x)) + '</td><td class="n">' + brl(bruto(x)) + '</td><td class="n">' + brl(campo('comissao')(x)) + '</td><td class="n">' + brl(campo('taxas')(x)) + '</td><td class="n">' + brl(campo('liquido')(x)) + '</td><td class="n">' + pct(bruto(v) ? bruto(x) / bruto(v) : 0, 0) + '</td></tr>').join(''), 1);
+    h += tab('Por vendedora', ['Vendedora', 'Loja', 'Vendas', 'Unid.', 'Bruto', 'Comissão', '% de comissão'],
+      grupo(v, p => p.vendedora || '—').map(([k, x]) => '<tr><td><b>' + esc(k) + '</b></td><td>' + esc([...new Set(x.map(p => p.loja))].join(', ')) + '</td><td class="n">' + num(x.length) + '</td><td class="n">' + num(unid(x)) + '</td><td class="n">' + brl(bruto(x)) + '</td><td class="n"><b>' + brl(campo('comissao')(x)) + '</b></td><td class="n">' + pct(bruto(x) ? campo('comissao')(x) / bruto(x) : 0, 1) + '</td></tr>').join(''), 2);
+    // por mês: competência da coluna "Mês" da planilha, todo o histórico (não depende do período escolhido)
+    const meses = grupo(L.filter(p => p.valido), p => p.competencia || p.data.slice(0, 7)).sort((a, b) => b[0].localeCompare(a[0]));
+    h += tab('Por mês <small>competência da planilha · todo o histórico</small>', ['Mês', 'Vendas', 'Unid.', 'Bruto', 'Comissão', 'Taxas', 'Líquido'],
+      meses.map(([k, x]) => '<tr><td>' + nomeMes(k) + '/' + k.slice(0, 4) + '</td><td class="n">' + num(x.length) + '</td><td class="n">' + num(unid(x)) + '</td><td class="n">' + brl(bruto(x)) + '</td><td class="n">' + brl(campo('comissao')(x)) + '</td><td class="n">' + brl(campo('taxas')(x)) + '</td><td class="n">' + brl(campo('liquido')(x)) + '</td></tr>').join(''), 1);
+    const pag = grupo(v, p => p.pagamento || 'não informado');
+    if (pag.length) h += '<div class="legend" style="margin-top:12px">Pagamento: ' + pag.map(([k, x]) => '<span>' + esc(k) + ' <b>' + num(x.length) + '</b></span>').join('') + '</div>';
+    return h + '<p class="tiny dim" style="margin:10px 0 0">Lido da aba "SmartPet" da planilha, somente leitura. Nome e CPF de cliente não são lidos. Uma loja ou vendedora nova aparece sozinha quando entra na planilha.</p></div>';
+  }
+
+  // ---------- estoque próprio (aba "Controle de Estoque", só leitura) ----------
+  const PRODUTOS_EST = [['multiuso', 'Multiuso'], ['sprayPera', 'Spray Pera'], ['sprayFigo', 'Spray Figo']];
+  function contagensEstoque() {
+    const linhas = D.estoque || [];
+    const datas = [...new Set(linhas.map(r => r.data))].sort();
+    const hist = datas.map(d => {
+      const lotes = linhas.filter(r => r.data === d);
+      return { data: d, lotes, itens: PRODUTOS_EST.map(([k, nome]) => { const vs = lotes.map(r => r[k]).filter(x => x != null); return { k, nome, total: vs.length ? sum(vs) : null }; }) };
+    });
+    const ult = hist[hist.length - 1], ant = hist[hist.length - 2];
+    return { hist, data: ult ? ult.data : null, ultima: ult ? ult.itens : [], anterior: ant ? ant.itens : null, dataAnterior: ant ? ant.data : null };
+  }
+
+  function pgEstoque() {
+    const E = contagensEstoque(), P = D.planilha || {};
+    titulo('Estoque próprio', 'Contagens por lote · planilha MundoPura_Performance_v3_Final' + (P.lidaEm ? ' · lida em ' + new Date(P.lidaEm).toLocaleString('pt-BR', { timeZone: TZ, dateStyle: 'short', timeStyle: 'short' }) : ''));
+    if (!E.hist.length) { $('tela').innerHTML = '<div class="card vazio">Nenhuma contagem de estoque lida da planilha ainda.</div>'; return; }
+    const cor = { multiuso: css('--brand'), sprayPera: '#c06cf0', sprayFigo: '#f5a524' };
+    const dif = (a, b) => a == null || b == null ? '' : a === b ? '<span class="delta flat">= 0</span>' : '<span class="delta ' + (a > b ? 'up' : 'down') + '">' + (a > b ? '▲ +' : '▼ ') + num(a - b) + '</span>';
+    const dataLonga = d => fmtDia(d) + '/' + d.slice(2, 4);
+    $('tela').innerHTML = (P.status === 'erro' ? '<div class="aviso"><b>Não consegui ler a planilha agora:</b> ' + esc(P.erro) + '. Mostrando a última leitura.</div>' : '') +
+      '<div class="grid g3">' + E.ultima.map((x, i) => {
+        const a = E.anterior ? E.anterior[i].total : null;
+        return '<div class="card kpi">' + spark(E.hist.map(c => c.itens[i].total || 0), cor[x.k], 'spark') + '<div class="lbl">' + x.nome + '</div>' +
+          '<div class="v num">' + (x.total == null ? '—' : num(x.total)) + ' <small class="muted" style="font-size:12px">un.</small></div>' +
+          '<div class="c">' + dif(x.total, a) + (E.dataAnterior ? ' desde ' + dataLonga(E.dataAnterior) : '') + ' · contagem de ' + dataLonga(E.data) + '</div></div>';
+      }).join('') + '</div>' +
+      '<div class="grid g21"><div class="card"><h3>Histórico das contagens <small>soma dos lotes</small></h3><div class="chart"><canvas id="cEst"></canvas></div></div>' +
+      '<div class="card"><h3>Contagem a contagem <small>diferença para a anterior</small></h3><div class="scroll"><table><thead><tr><th>Data</th>' + PRODUTOS_EST.map(([, n]) => '<th class="n">' + n + '</th>').join('') + '</tr></thead><tbody>' +
+        E.hist.slice().reverse().map((c, i, arr) => '<tr><td>' + dataLonga(c.data) + '</td>' + c.itens.map((x, j) => '<td class="n">' + (x.total == null ? '—' : num(x.total)) + (arr[i + 1] ? ' ' + dif(x.total, arr[i + 1].itens[j].total) : '') + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table></div></div></div>' +
+      '<div class="card"><h3>Detalhe por lote <small>todas as contagens</small></h3><div class="scroll"><table><thead><tr><th>Data</th><th>Lote</th>' + PRODUTOS_EST.map(([, n]) => '<th class="n">' + n + '</th>').join('') + '<th>Situação</th></tr></thead><tbody>' +
+        E.hist.slice().reverse().map(c => c.lotes.map((l, j) => '<tr><td>' + (j ? '' : '<b>' + dataLonga(c.data) + '</b>') + '</td><td>' + esc(l.lote) + '</td>' +
+          PRODUTOS_EST.map(([k]) => '<td class="n">' + (l[k] == null ? '—' : num(l[k])) + '</td>').join('') +
+          '<td><span class="pill ' + (/encerr/i.test(l.situacao) ? 'p-mut' : /contad/i.test(l.situacao) ? 'p-ok' : 'p-info') + '">' + esc(l.situacao || '—') + '</span></td></tr>').join('')).join('') +
+      '</tbody></table></div><p class="tiny dim" style="margin:10px 0 0">▲ entrada (produção ou reposição) · ▼ saída desde a contagem anterior. Lido da aba "Controle de Estoque", somente leitura; linhas "TOTAL GERAL" e contagens ainda vazias são ignoradas.</p></div>';
+    grafico('cEst', {
+      type: 'line',
+      data: { labels: E.hist.map(c => fmtDia(c.data)), datasets: PRODUTOS_EST.map(([k, n], i) => ({ label: n, data: E.hist.map(c => c.itens[i].total), borderColor: cor[k], backgroundColor: cor[k], tension: .25, pointRadius: 3, yAxisID: k === 'multiuso' ? 'y' : 'y1' })) },
+      options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { boxWidth: 10 } } },
+        scales: { x: { grid: { display: false } }, y: { title: { display: true, text: 'Multiuso (un.)' } }, y1: { position: 'right', grid: { display: false }, title: { display: true, text: 'Sprays (un.)' } } } }
+    });
   }
 
   function cardAds(c, mi) {
