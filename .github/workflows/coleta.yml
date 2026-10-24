@@ -1,0 +1,82 @@
+# Central de vendas na nuvem (GitHub Actions). Enviado para .github/workflows/coleta.yml pelo nuvem.ps1.
+# Codigo, config e cache do Tiny ficam criptografados no release "nuvem" (codigo.enc e estado.enc).
+# A cada 15 min: sincroniza com o Tiny por 10 min, salva o cache e publica o link.
+name: Coleta do painel
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  coleta:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CHAVE_NUVEM: ${{ secrets.CHAVE_NUVEM }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github
+
+      - name: Fuso de Brasilia
+        run: tzutil /s "E. South America Standard Time"
+
+      - name: Abrir pacotes
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          gh release download nuvem -p codigo.enc -p estado.enc -D pacotes -R $env:GITHUB_REPOSITORY
+          .github\cripto.ps1 abrir pacotes\codigo.enc app
+          .github\cripto.ps1 abrir pacotes\estado.enc app
+
+      - name: Sincronizar com o Tiny
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File app\painel-empresa\painel.ps1 -Nuvem -Minutos 10
+
+      - name: Salvar cache
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          New-Item -ItemType Directory -Force estado\painel-empresa\cache | Out-Null
+          Copy-Item app\painel-empresa\cache\pedidos.jsonl, app\painel-empresa\cache\produtos.jsonl estado\painel-empresa\cache\
+          .github\cripto.ps1 fechar estado pacotes\estado.enc
+          gh release upload nuvem pacotes\estado.enc --clobber -R $env:GITHUB_REPOSITORY
+
+      - name: Manter o agendamento ligado
+        continue-on-error: true
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/coleta.yml/enable"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: app/site
+          retention-days: 1
+
+  publicar:
+    needs: coleta
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - id: pages
+        uses: actions/deploy-pages@v4
