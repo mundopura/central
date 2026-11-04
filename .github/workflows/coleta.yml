@@ -38,9 +38,19 @@ jobs:
         shell: powershell
         run: |
           Set-ExecutionPolicy -Scope Process Bypass -Force
-          gh release download nuvem -p codigo.enc -p estado.enc -D pacotes -R $env:GITHUB_REPOSITORY
+          gh release download nuvem -p codigo.enc -D pacotes -R $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { throw 'Nao baixei o codigo.enc do release nuvem.' }
           .github\cripto.ps1 abrir pacotes\codigo.enc app
-          .github\cripto.ps1 abrir pacotes\estado.enc app
+          # estado.enc; se um envio parou no meio, o novo-estado.enc; sem nenhum, comeca com o cache vazio
+          $rel = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/nuvem" | ConvertFrom-Json
+          $estado = @('estado.enc', 'novo-estado.enc' | Where-Object { @($rel.assets.name) -contains $_ })[0]
+          if ($estado) {
+            gh release download nuvem -p $estado -D pacotes -R $env:GITHUB_REPOSITORY
+            if ($LASTEXITCODE -ne 0) { throw "Nao baixei o $estado do release nuvem." }
+            .github\cripto.ps1 abrir "pacotes\$estado" app
+          } else {
+            Write-Host '::warning::O release nuvem esta sem estado.enc: a coleta comeca com o cache vazio.'
+          }
 
       - name: Sincronizar com o Tiny
         shell: powershell
@@ -52,8 +62,18 @@ jobs:
           Set-ExecutionPolicy -Scope Process Bypass -Force
           New-Item -ItemType Directory -Force estado\painel-empresa\cache | Out-Null
           Copy-Item app\painel-empresa\cache\pedidos.jsonl, app\painel-empresa\cache\produtos.jsonl estado\painel-empresa\cache\
-          .github\cripto.ps1 fechar estado pacotes\estado.enc
-          gh release upload nuvem pacotes\estado.enc --clobber -R $env:GITHUB_REPOSITORY
+          .github\cripto.ps1 fechar estado pacotes\novo-estado.enc
+          # envia com nome provisorio e so depois troca (como o Send-Pacote do nuvem.ps1):
+          # o --clobber apagava o estado.enc antes de enviar, e um envio que falhasse deixava o release sem ele
+          $api = "repos/$env:GITHUB_REPOSITORY/releases"
+          $rel = gh api "$api/tags/nuvem" | ConvertFrom-Json
+          foreach ($a in @($rel.assets | Where-Object { $_.name -eq 'novo-estado.enc' })) { gh api -X DELETE "$api/assets/$($a.id)" }
+          gh release upload nuvem pacotes\novo-estado.enc -R $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { throw 'Falha ao enviar o novo-estado.enc (o estado.enc anterior continua no release).' }
+          foreach ($a in @($rel.assets | Where-Object { $_.name -eq 'estado.enc' })) { gh api -X DELETE "$api/assets/$($a.id)" }
+          $novo = @((gh api "$api/tags/nuvem" | ConvertFrom-Json).assets | Where-Object { $_.name -eq 'novo-estado.enc' })[0]
+          gh api -X PATCH "$api/assets/$($novo.id)" -f name=estado.enc | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Falha ao renomear novo-estado.enc para estado.enc (a proxima coleta usa o novo-estado.enc).' }
 
       - name: Manter o agendamento ligado
         continue-on-error: true
